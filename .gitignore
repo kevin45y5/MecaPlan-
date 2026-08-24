@@ -1,0 +1,8 @@
+# Visual Studio user and workspace files
+.vs/
+*.user
+*.suo
+
+# .NET build outputs
+bin/
+obj/
