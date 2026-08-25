@@ -17,7 +17,7 @@
 La cadena no debe agregarse a `appsettings.json` ni confirmarse en Git. Cada integrante debe ejecutar, desde la raíz del repositorio:
 
 ```powershell
-dotnet user-secrets set "ConnectionStrings:MecaPlan" "Server=localhost\SQLEXPRESS;Database=MecaPlanDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True" --project MecaPlan\MecaPlan.csproj
+dotnet user-secrets set "ConnectionStrings:MecaPlan" "Server=.\SQLEXPRESS;Database=MecaPlanDB;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True" --project MecaPlan\MecaPlan.csproj
 ```
 
 Si se usa otra instancia, se reemplaza solamente el valor de `Server`.
@@ -26,7 +26,15 @@ Si se usa otra instancia, se reemplaza solamente el valor de `Server`.
 
 ```powershell
 dotnet restore MecaPlan.slnx --disable-parallel -m:1
+dotnet dev-certs https --trust
 dotnet run --project MecaPlan\MecaPlan.csproj --launch-profile https
+```
+
+Abrir `https://localhost:7180`. Si el navegador no puede conectar, ejecutar una vez:
+
+```powershell
+dotnet dev-certs https --clean
+dotnet dev-certs https --trust
 ```
 
 No versionar archivos del almacén de secretos ni copias locales de la base de datos.
