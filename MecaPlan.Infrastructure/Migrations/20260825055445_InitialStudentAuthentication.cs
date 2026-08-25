@@ -34,10 +34,11 @@ namespace MecaPlan.Infrastructure.Migrations
                     SET EmailNormalizado = UPPER(LTRIM(RTRIM(Email)))
                     WHERE EmailNormalizado IS NULL;
                     IF COL_LENGTH(N'Seguridad.Estudiantes', N'EstadoBit') IS NULL
-                        ALTER TABLE Seguridad.Estudiantes ADD EstadoBit BIT NULL;
-                    UPDATE Seguridad.Estudiantes SET EstadoBit = 0 WHERE EstadoBit IS NULL;
+                        THROW 51000, 'Preflight SP1 bloqueado: falta EstadoBit.', 1;
                     IF EXISTS (SELECT 1 FROM Seguridad.Estudiantes WHERE PasswordHash IS NULL OR LTRIM(RTRIM(PasswordHash)) = '')
                         THROW 51000, 'Preflight SP1 bloqueado: existen PasswordHash vacíos o nulos.', 1;
+                    IF EXISTS (SELECT 1 FROM Seguridad.Estudiantes WHERE EstadoBit IS NULL)
+                        THROW 51000, 'Preflight SP1 bloqueado: existen EstadoBit nulos.', 1;
                     IF EXISTS (SELECT 1 FROM Seguridad.Estudiantes GROUP BY Carnet HAVING COUNT(*) > 1)
                         THROW 51000, 'Preflight SP1 bloqueado: existen carnets duplicados.', 1;
                     IF EXISTS (SELECT 1 FROM Seguridad.Estudiantes GROUP BY EmailNormalizado HAVING COUNT(*) > 1)

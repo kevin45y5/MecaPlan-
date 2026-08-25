@@ -1,2 +1,14 @@
 @model MecaPlan.ViewModels.Account.RegisterViewModel
-@{ViewData["Title"]="Registro";}<h1>Crear cuenta</h1><form asp-action="Register" method="post"><div asp-validation-summary="ModelOnly"></div><label asp-for="Nombre"></label><input asp-for="Nombre"/><label asp-for="Apellido"></label><input asp-for="Apellido"/><label asp-for="Carnet"></label><input asp-for="Carnet"/><label asp-for="Email"></label><input asp-for="Email"/><label asp-for="Password"></label><input asp-for="Password"/><label asp-for="Confirmation">Confirmar contraseña</label><input asp-for="Confirmation"/><button type="submit">Registrarme</button></form>
+@{ ViewData["Title"] = "Registro"; }
+<h1>Crear cuenta</h1>
+<form asp-action="Register" method="post" data-submitting-text="Registrando…">
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div><label asp-for="Nombre"></label><input asp-for="Nombre" autocomplete="given-name" /><span asp-validation-for="Nombre"></span></div>
+    <div><label asp-for="Apellido"></label><input asp-for="Apellido" autocomplete="family-name" /><span asp-validation-for="Apellido"></span></div>
+    <div><label asp-for="Carnet"></label><input asp-for="Carnet" /><span asp-validation-for="Carnet"></span></div>
+    <div><label asp-for="Email"></label><input asp-for="Email" autocomplete="email" /><span asp-validation-for="Email"></span></div>
+    <div><label asp-for="Password"></label><input asp-for="Password" autocomplete="new-password" aria-describedby="password-help" /><small id="password-help">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.</small><span asp-validation-for="Password"></span></div>
+    <div><label asp-for="Confirmation">Confirmar contraseña</label><input asp-for="Confirmation" autocomplete="new-password" /><span asp-validation-for="Confirmation"></span></div>
+    <button type="submit">Registrarme</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
