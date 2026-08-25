@@ -1,3 +1,10 @@
 <Solution>
   <Project Path="MecaPlan/MecaPlan.csproj" />
+  <Project Path="MecaPlan.Domain/MecaPlan.Domain.csproj" />
+  <Project Path="MecaPlan.Application/MecaPlan.Application.csproj" />
+  <Project Path="MecaPlan.Infrastructure/MecaPlan.Infrastructure.csproj" />
+  <Project Path="tests/MecaPlan.Domain.Tests/MecaPlan.Domain.Tests.csproj" />
+  <Project Path="tests/MecaPlan.Application.Tests/MecaPlan.Application.Tests.csproj" />
+  <Project Path="tests/MecaPlan.Infrastructure.IntegrationTests/MecaPlan.Infrastructure.IntegrationTests.csproj" />
+  <Project Path="tests/MecaPlan.Web.IntegrationTests/MecaPlan.Web.IntegrationTests.csproj" />
 </Solution>

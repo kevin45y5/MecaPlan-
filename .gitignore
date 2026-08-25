@@ -6,3 +6,9 @@
 # .NET build outputs
 bin/
 obj/
+packages/
+TestResults/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Local.json

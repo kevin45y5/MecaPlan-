@@ -1,0 +1,2 @@
+@model MecaPlan.ViewModels.Account.LoginViewModel
+@{ViewData["Title"]="Iniciar sesión";}<h1>Iniciar sesión</h1>@if(TempData["Success"] is string s){<p role="status">@s</p>}<form asp-action="Login" method="post"><input asp-for="ReturnUrl" type="hidden"/><div asp-validation-summary="ModelOnly"></div><label asp-for="Email"></label><input asp-for="Email"/><label asp-for="Password"></label><input asp-for="Password"/><button type="submit">Entrar</button></form><a asp-action="Register">Crear cuenta</a>

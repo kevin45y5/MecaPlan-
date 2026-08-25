@@ -1,7 +1,8 @@
 <!--
 Sync Impact Report
-- Version change: none -> 1.0.0
-- Added: eight binding principles, delivery gates, governance, and project source context.
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: I. Desarrollo dirigido por especificación (aprobación explícita antes de implementar).
+- Added: gate de autorización del propietario antes de ejecutar `/speckit.implement`.
 - Removed: none.
 - Deferred items: none. The selected AI provider and deployment environment are implementation
   decisions and MUST be specified per feature before integration.
@@ -33,6 +34,9 @@ IA nunca prevalecen sobre ella.
   el cambio; se corrige la especificación o el diseño, no esta constitución por conveniencia.
 - Los criterios de aceptación MUST ser demostrables sin depender de una respuesta no
   determinista de un modelo de IA.
+- Antes de ejecutar `/speckit.implement` o cualquier comando que modifique código, migraciones,
+  configuración o pruebas de una funcionalidad, el agente MUST solicitar y recibir autorización
+  explícita del propietario del proyecto para esa implementación.
 
 ### II. Arquitectura mantenible y límites de responsabilidad
 
@@ -159,4 +163,4 @@ equipo son fuentes de requisitos. En caso de conflicto, la especificación aprob
 debe registrar la decisión; esta constitución conserva prioridad para seguridad, integridad,
 calidad y gobernanza.
 
-**Versión**: 1.0.0 | **Ratificada**: 2026-08-24 | **Última enmienda**: 2026-08-24
+**Versión**: 1.1.0 | **Ratificada**: 2026-08-24 | **Última enmienda**: 2026-08-24

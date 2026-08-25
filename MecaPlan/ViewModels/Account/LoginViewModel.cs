@@ -1,0 +1,1 @@
+using System.ComponentModel.DataAnnotations; namespace MecaPlan.ViewModels.Account; public sealed class LoginViewModel{[Required,EmailAddress]public string Email{get;set;}="";[Required,DataType(DataType.Password)]public string Password{get;set;}="";public string? ReturnUrl{get;set;}}

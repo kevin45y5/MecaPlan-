@@ -1,0 +1,1 @@
+using Microsoft.AspNetCore.Authorization;using Microsoft.AspNetCore.Mvc; namespace MecaPlan.Controllers; [Authorize] public sealed class DashboardController:Controller{public IActionResult Index()=>View();}
