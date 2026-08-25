@@ -27,10 +27,10 @@ Si se usa otra instancia, se reemplaza solamente el valor de `Server`.
 ```powershell
 dotnet restore MecaPlan.slnx --disable-parallel -m:1
 dotnet dev-certs https --trust
-dotnet run --project MecaPlan\MecaPlan.csproj --launch-profile https
+dotnet run --project MecaPlan\MecaPlan.csproj --launch-profile http
 ```
 
-Abrir `https://localhost:7180`. Si el navegador no puede conectar, ejecutar una vez:
+Abrir `http://localhost:5180`. Para probar HTTPS local, usar en su lugar el perfil `https` y ejecutar una vez:
 
 ```powershell
 dotnet dev-certs https --clean

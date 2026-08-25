@@ -12,11 +12,11 @@ public sealed class StudentPersistenceTests
     private static MecaPlanDbContext CreateContext()
     {
         var connection = Environment.GetEnvironmentVariable("MECAPLAN_TEST_CONNECTION");
-        Assert.False(string.IsNullOrWhiteSpace(connection), "MECAPLAN_TEST_CONNECTION debe apuntar a la base aislada.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(connection);
         return new MecaPlanDbContext(new DbContextOptionsBuilder<MecaPlanDbContext>().UseSqlServer(connection).Options);
     }
 
-    [Fact]
+    [SqlFact]
     public async Task Registration_persists_a_hash_and_rejects_duplicate_email()
     {
         await using var db = CreateContext();
@@ -36,7 +36,7 @@ public sealed class StudentPersistenceTests
         Assert.False(await repository.AddAsync(duplicateCarnet));
     }
 
-    [Fact]
+    [SqlFact]
     public async Task Concurrent_registration_with_the_same_email_creates_only_one_account()
     {
         var suffix = Guid.NewGuid().ToString("N");
@@ -51,5 +51,14 @@ public sealed class StudentPersistenceTests
         }));
 
         Assert.Equal(1, outcomes.Count(result => result));
+    }
+}
+
+public sealed class SqlFactAttribute : FactAttribute
+{
+    public SqlFactAttribute()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MECAPLAN_TEST_CONNECTION")))
+            Skip = "Prueba SQL omitida: configure MECAPLAN_TEST_CONNECTION con una base aislada. Consulte docs/testing/SP1-test-database.md.";
     }
 }

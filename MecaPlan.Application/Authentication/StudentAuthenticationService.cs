@@ -30,7 +30,11 @@ public sealed class StudentAuthenticationService(
     public async Task<LoginResult> LoginAsync(LoginStudentCommand command, CancellationToken ct = default)
     {
         var email = Normalize(command.Email);
-        if (attempts.IsBlocked(email, DateTime.UtcNow)) return new(false, Error: InvalidLoginMessage);
+        if (attempts.IsBlocked(email, DateTime.UtcNow))
+        {
+            await audit.WriteAsync(new(null, "InicioSesion", "Rechazo", command.CorrelationId, MinimizeOrigin(command.Origin)), ct);
+            return new(false, Error: InvalidLoginMessage);
+        }
         var student = await students.FindByNormalizedEmailAsync(email, ct);
         var succeeded = student is not null && student.EstadoBit && hasher.Verify(student, student.PasswordHash, command.Password);
         if (succeeded) attempts.RecordSuccess(email); else attempts.RecordFailure(email, DateTime.UtcNow);

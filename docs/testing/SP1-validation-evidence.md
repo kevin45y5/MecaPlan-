@@ -5,7 +5,8 @@
 ## Validación local reproducible
 
 ```powershell
-dotnet test MecaPlan.slnx --no-restore --verbosity minimal
+dotnet build MecaPlan.slnx --no-restore --verbosity minimal -m:1 -p:UseSharedCompilation=false
+dotnet test MecaPlan.slnx --no-build --verbosity minimal -m:1
 ```
 
 Resultado: 15 pruebas correctas, 0 errores y 0 advertencias de compilación.
@@ -21,3 +22,7 @@ La migración `20260825055445_InitialStudentAuthentication` se verificó contra
 `MecaPlanDB_SP1_Test`: la base ya estaba actualizada y no se modificó `MecaPlanDB`.
 La prueba SQL exige `MECAPLAN_TEST_CONNECTION`; fallará explícitamente si falta para
 evitar falsos positivos. No se versiona esa cadena.
+
+## Ejecución actual
+
+La validación local más reciente terminó con 13 pruebas correctas, 2 pruebas SQL omitidas por no configurar `MECAPLAN_TEST_CONNECTION`, 0 errores y 0 advertencias de compilación. La omisión es intencional: cada integrante ejecuta la cobertura SQL contra su propia copia aislada siguiendo `docs/testing/SP1-test-database.md`.

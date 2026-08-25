@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MecaPlan.Application.Authentication;
 using MecaPlan.Domain.Entities;
@@ -35,7 +36,7 @@ public sealed class AccountController(IStudentAuthenticationService service, IAu
         return LocalRedirect(IsLocalReturnUrl(model.ReturnUrl) ? model.ReturnUrl! : "/Dashboard/Index");
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
+    [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
         int? id = int.TryParse(User.FindFirstValue("StudentId"), out var studentId) ? studentId : null;
