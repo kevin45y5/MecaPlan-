@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\.specify\memory\constitution.md"
+          Link="Documentación\CONSTITUCION.md" />
+  </ItemGroup>
+
 </Project>
