@@ -1,2 +1,13 @@
 @model MecaPlan.ViewModels.Account.LoginViewModel
-@{ViewData["Title"]="Iniciar sesión";}<h1>Iniciar sesión</h1>@if(TempData["Success"] is string s){<p role="status">@s</p>}<form asp-action="Login" method="post"><input asp-for="ReturnUrl" type="hidden"/><div asp-validation-summary="ModelOnly"></div><label asp-for="Email"></label><input asp-for="Email"/><label asp-for="Password"></label><input asp-for="Password"/><button type="submit">Entrar</button></form><a asp-action="Register">Crear cuenta</a>
+@{ ViewData["Title"] = "Iniciar sesión"; }
+<h1>Iniciar sesión</h1>
+@if (TempData["Success"] is string success) { <p role="status">@success</p> }
+<form asp-action="Login" method="post" data-submitting-text="Iniciando sesión…">
+    <input asp-for="ReturnUrl" type="hidden" />
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div><label asp-for="Email"></label><input asp-for="Email" autocomplete="email" /><span asp-validation-for="Email"></span></div>
+    <div><label asp-for="Password"></label><input asp-for="Password" autocomplete="current-password" /><span asp-validation-for="Password"></span></div>
+    <button type="submit">Entrar</button>
+</form>
+<a asp-action="Register">Crear cuenta</a>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

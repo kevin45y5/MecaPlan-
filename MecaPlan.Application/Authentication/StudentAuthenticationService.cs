@@ -23,7 +23,7 @@ public sealed class StudentAuthenticationService(
         var draft = new Estudiante(command.Nombre.Trim(), command.Apellido.Trim(), carnet, command.Email.Trim(), email, "pending");
         var student = new Estudiante(command.Nombre.Trim(), command.Apellido.Trim(), carnet, command.Email.Trim(), email, hasher.Hash(draft, command.Password));
         if (!await students.AddAsync(student, ct)) return new(false, "No fue posible completar el registro con esos datos.");
-        await audit.WriteAsync(new(student.EstudianteID, "Registro", "Exito", command.CorrelationId, command.Origin), ct);
+        await audit.WriteAsync(new(student.EstudianteID, "Registro", "Exito", command.CorrelationId, MinimizeOrigin(command.Origin)), ct);
         return new(true);
     }
 
@@ -34,11 +34,13 @@ public sealed class StudentAuthenticationService(
         var student = await students.FindByNormalizedEmailAsync(email, ct);
         var succeeded = student is not null && student.EstadoBit && hasher.Verify(student, student.PasswordHash, command.Password);
         if (succeeded) attempts.RecordSuccess(email); else attempts.RecordFailure(email, DateTime.UtcNow);
-        await audit.WriteAsync(new(succeeded ? student!.EstudianteID : null, "InicioSesion", succeeded ? "Exito" : "Rechazo", command.CorrelationId, command.Origin), ct);
+        await audit.WriteAsync(new(succeeded ? student!.EstudianteID : null, "InicioSesion", succeeded ? "Exito" : "Rechazo", command.CorrelationId, MinimizeOrigin(command.Origin)), ct);
         return succeeded ? new(true, student!.EstudianteID, $"{student.Nombre} {student.Apellido}") : new(false, Error: InvalidLoginMessage);
     }
 
     public static string Normalize(string email) => email.Trim().ToUpperInvariant();
     public static bool Strong(string password) => password.Length >= 8 && password.Any(char.IsUpper) && password.Any(char.IsLower) && password.Any(char.IsDigit) && password.Any(ch => !char.IsLetterOrDigit(ch));
     private static bool IsEmail(string value) => Regex.IsMatch(value.Trim(), "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static string? MinimizeOrigin(string? origin) =>
+        Uri.TryCreate(origin, UriKind.Absolute, out var uri) ? uri.Host : null;
 }

@@ -5,7 +5,7 @@ namespace MecaPlan.Infrastructure.Persistence.Preflight;
 
 public sealed record EstudiantesPreflightResult(int DuplicateCarnets, int DuplicateEmails, int NullStates, int MissingHashes)
 {
-    public bool CanMigrate => DuplicateCarnets == 0 && DuplicateEmails == 0 && MissingHashes == 0;
+    public bool CanMigrate => DuplicateCarnets == 0 && DuplicateEmails == 0 && NullStates == 0 && MissingHashes == 0;
 }
 
 /// <summary>Read-only guard used before applying the SP-1 migration to an existing database.</summary>
@@ -14,7 +14,8 @@ public sealed class EstudiantesPreflight(MecaPlanDbContext db)
     public async Task<EstudiantesPreflightResult> CheckAsync(CancellationToken ct = default)
     {
         var connection = db.Database.GetDbConnection();
-        await connection.OpenAsync(ct);
+        var mustClose = connection.State != ConnectionState.Open;
+        if (mustClose) await connection.OpenAsync(ct);
         try
         {
             return new EstudiantesPreflightResult(
@@ -23,7 +24,7 @@ public sealed class EstudiantesPreflight(MecaPlanDbContext db)
                 await CountAsync("SELECT COUNT(*) FROM Seguridad.Estudiantes WHERE EstadoBit IS NULL", ct),
                 await CountAsync("SELECT COUNT(*) FROM Seguridad.Estudiantes WHERE PasswordHash IS NULL OR LTRIM(RTRIM(PasswordHash)) = ''", ct));
         }
-        finally { await connection.CloseAsync(); }
+        finally { if (mustClose) await connection.CloseAsync(); }
     }
 
     private async Task<int> CountAsync(string sql, CancellationToken ct)
