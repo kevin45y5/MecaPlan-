@@ -31,5 +31,25 @@ public sealed class StudentPersistenceTests
 
         var duplicate = new Estudiante("Otra", "Prueba", "OTHER-" + suffix, draft.Email, draft.EmailNormalizado, hash);
         Assert.False(await repository.AddAsync(duplicate));
+
+        var duplicateCarnet = new Estudiante("Otra", "Prueba", draft.Carnet, "other" + suffix + "@example.test", "OTHER" + suffix + "@EXAMPLE.TEST", hash);
+        Assert.False(await repository.AddAsync(duplicateCarnet));
+    }
+
+    [Fact]
+    public async Task Concurrent_registration_with_the_same_email_creates_only_one_account()
+    {
+        var suffix = Guid.NewGuid().ToString("N");
+        var email = "concurrent" + suffix + "@example.test";
+        var normalizedEmail = email.ToUpperInvariant();
+        var outcomes = await Task.WhenAll(Enumerable.Range(0, 4).Select(async index =>
+        {
+            await using var db = CreateContext();
+            var student = new Estudiante("Ana", "Prueba", "CONCURRENT-" + index + "-" + suffix, email, normalizedEmail, "pending");
+            var hash = new AspNetPasswordHashService().Hash(student, "Clave1!x");
+            return await new EstudianteRepository(db).AddAsync(new Estudiante("Ana", "Prueba", student.Carnet, email, normalizedEmail, hash));
+        }));
+
+        Assert.Equal(1, outcomes.Count(result => result));
     }
 }

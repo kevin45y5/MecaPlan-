@@ -1,10 +1,13 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
-BEGIN
-    CREATE TABLE [__EFMigrationsHistory] (
-        [MigrationId] nvarchar(150) NOT NULL,
-        [ProductVersion] nvarchar(32) NOT NULL,
-        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
-    );
-END;
-GO
+/*
+  Despliegue idempotente de SP1.
 
+  La migración EF 20260825055445_InitialStudentAuthentication es la fuente
+  versionada del DDL y registra su ejecución en __EFMigrationsHistory.
+  Antes: use una copia aislada, configure ConnectionStrings__MecaPlan fuera del
+  repositorio y ejecute el preflight.
+
+  dotnet ef database update --project MecaPlan.Infrastructure/MecaPlan.Infrastructure.csproj --startup-project MecaPlan/MecaPlan.csproj
+
+  La migración se bloquea ante hashes vacíos, EstadoBit nulo/ausente, carnets
+  duplicados o correos duplicados tras normalización.
+*/

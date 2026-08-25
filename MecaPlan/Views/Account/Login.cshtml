@@ -4,7 +4,7 @@
     <a class="auth-brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">M</span> MecaPlan</a>
     <h1 class="auth-title">Qué gusto verte.</h1><p class="auth-subtitle">Inicia sesión para continuar con tu organización académica.</p>
     @if (TempData["Success"] is string success) { <div class="alert-success" role="status">@success</div> }
-    <form asp-action="Login" method="post"><input asp-for="ReturnUrl" type="hidden" /><div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+    <form asp-action="Login" method="post" data-submitting-text="Iniciando sesión…"><input asp-for="ReturnUrl" type="hidden" /><div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
         <div class="form-group"><label class="form-label" asp-for="Email">Correo electrónico</label><input class="form-control" asp-for="Email" autocomplete="email" placeholder="tu@correo.com" /><span asp-validation-for="Email" class="field-validation-error"></span></div>
         <div class="form-group"><label class="form-label" asp-for="Password">Contraseña</label><input class="form-control" asp-for="Password" autocomplete="current-password" placeholder="••••••••" /><span asp-validation-for="Password" class="field-validation-error"></span></div>
         <button class="button-primary auth-submit" type="submit">Entrar a mi espacio</button></form>

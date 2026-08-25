@@ -22,7 +22,7 @@ public sealed class AccountController(IStudentAuthenticationService service, IAu
         return RedirectToAction(nameof(Login));
     }
 
-    [HttpGet] public IActionResult Login(string? returnUrl) => View(new LoginViewModel { ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null });
+    [HttpGet] public IActionResult Login(string? returnUrl) => View(new LoginViewModel { ReturnUrl = IsLocalReturnUrl(returnUrl) ? returnUrl : null });
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model, CancellationToken ct)
@@ -32,7 +32,7 @@ public sealed class AccountController(IStudentAuthenticationService service, IAu
         if (!result.Succeeded) { ModelState.AddModelError(string.Empty, result.Error!); return View(model); }
         var claims = new[] { new Claim("StudentId", result.StudentId!.Value.ToString()), new Claim(ClaimTypes.Name, result.Name!) };
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
-        return LocalRedirect(Url.IsLocalUrl(model.ReturnUrl) ? model.ReturnUrl! : "/Dashboard/Index");
+        return LocalRedirect(IsLocalReturnUrl(model.ReturnUrl) ? model.ReturnUrl! : "/Dashboard/Index");
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -40,7 +40,10 @@ public sealed class AccountController(IStudentAuthenticationService service, IAu
     {
         int? id = int.TryParse(User.FindFirstValue("StudentId"), out var studentId) ? studentId : null;
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await audit.WriteAsync(new EventoAutenticacion(id, "CierreSesion", "Exito", HttpContext.TraceIdentifier, HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+        await audit.WriteAsync(new EventoAutenticacion(id, "CierreSesion", "Exito", HttpContext.TraceIdentifier, null), ct);
         return RedirectToAction(nameof(Login));
     }
+
+    private static bool IsLocalReturnUrl(string? value) =>
+        !string.IsNullOrWhiteSpace(value) && value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) && !value.StartsWith("/\\", StringComparison.Ordinal);
 }
