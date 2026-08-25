@@ -1,0 +1,69 @@
+@model MecaPlan.Models.Bom.BomChecklistViewModel
+@{
+    ViewData["Title"] = "Checklist BOM";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Lista de materiales — @Model.NombreProyecto</h1>
+    <span class="badge text-bg-secondary">Proyecto #@Model.ProyectoId</span>
+</div>
+
+<p class="text-muted">
+    Marca los componentes que <strong>ya posees</strong>. El costo pendiente se recalcula al instante
+    y solo se cotizará lo que realmente te falta comprar.
+</p>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">@(TempData["Mensaje"] ?? "Este proyecto todavía no tiene componentes en su lista de materiales.")</div>
+}
+else
+{
+    <div class="card shadow-sm" data-bom-checklist data-toggle-url="@Url.Action("Toggle", "Bom")">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="text-center">Ya lo tengo</th>
+                        <th scope="col">Componente</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col" class="text-end">Precio unit.</th>
+                        <th scope="col" class="text-end">Cant.</th>
+                        <th scope="col" class="text-end">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr data-bom-row data-subtotal="@item.Subtotal.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                            <td class="text-center">
+                                <input class="form-check-input bom-check"
+                                       type="checkbox"
+                                       data-bom-id="@item.BomId"
+                                       checked="@(!item.EsFaltante)"
+                                       aria-label="Marcar @item.Nombre como disponible" />
+                            </td>
+                            <td>@item.Nombre</td>
+                            <td><span class="badge text-bg-light border">@item.Tipo</span></td>
+                            <td class="text-end">@item.PrecioEstimado.ToString("C")</td>
+                            <td class="text-end">× @item.CantidadRequerida</td>
+                            <td class="text-end">@item.Subtotal.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="5" class="text-end fw-bold">Costo estimado pendiente por comprar:</td>
+                        <td class="text-end fs-5 fw-bold text-primary" id="bom-costo-total">
+                            @Model.CostoPendiente.ToString("C")
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/bom-checklist.js" asp-append-version="true"></script>
+}
