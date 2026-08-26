@@ -1,0 +1,5 @@
+@model MecaPlan.ViewModels.Projects.CreateProjectViewModel
+@{ ViewData["Title"] = "Nueva idea"; }
+<section class="auth-page"><div class="auth-shell"><h1 class="auth-title">Idea de prototipo</h1><p class="auth-subtitle">Describe tu prototipo y generaremos una lista inicial de materiales.</p>
+<form asp-action="Create" method="post"><div asp-validation-summary="ModelOnly" role="alert"></div><div class="form-group"><label class="form-label" asp-for="NombreProyecto">Nombre del proyecto</label><input class="form-control" asp-for="NombreProyecto" /><span asp-validation-for="NombreProyecto"></span></div><div class="form-group"><label class="form-label" asp-for="DescripcionIdea">Descripción de la idea</label><textarea class="form-control" asp-for="DescripcionIdea" rows="6" placeholder="Ejemplo: robot con Arduino, sensor ultrasónico y motor DC"></textarea><span asp-validation-for="DescripcionIdea"></span></div><button class="button-primary" type="submit">Enviar idea</button></form></div></section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,5 @@
+@model MecaPlan.ViewModels.Projects.ProjectResultViewModel
+@{ ViewData["Title"] = "BOM inicial"; }
+<section class="auth-page"><div class="auth-shell"><h1 class="auth-title">@Model.NombreProyecto</h1><h2>Lista inicial de materiales</h2>
+@if (Model.Bom.Count == 0) { <p role="status">La idea fue guardada, pero no se detectaron componentes del catálogo académico.</p> } else { <ul>@foreach (var item in Model.Bom) { <li>@item.Componente: @item.Cantidad</li> }</ul> }
+<a class="button-primary" asp-action="Create">Registrar otra idea</a></div></section>

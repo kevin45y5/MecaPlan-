@@ -13,7 +13,7 @@
         <a class="brand" asp-controller="Home" asp-action="Index" aria-label="MecaPlan, inicio"><span class="brand-mark" aria-hidden="true">M</span><span>Meca<span>Plan</span></span></a>
         <button class="nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
         <div class="collapse navbar-collapse" id="mainNavigation"><ul class="nav-links ms-auto"><li><a asp-controller="Home" asp-action="Index">Inicio</a></li>
-        @if (User.Identity?.IsAuthenticated == true) { <li><a asp-controller="Dashboard" asp-action="Index">Mi espacio</a></li><li><form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-logout" type="submit">Cerrar sesión</button></form></li> }
+        @if (User.Identity?.IsAuthenticated == true) { <li><a asp-controller="Dashboard" asp-action="Index">Mi espacio</a></li><li><a asp-controller="Projects" asp-action="Create">Nueva idea</a></li><li><form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-logout" type="submit">Cerrar sesión</button></form></li> }
         else { <li><a asp-controller="Account" asp-action="Login">Iniciar sesión</a></li><li><a class="nav-cta" asp-controller="Account" asp-action="Register">Crear cuenta</a></li> }</ul></div>
     </nav></header>
     <main role="main">@RenderBody()</main>

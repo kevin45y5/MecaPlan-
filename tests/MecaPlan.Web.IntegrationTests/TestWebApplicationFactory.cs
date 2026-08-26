@@ -4,12 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MecaPlan.Application.Authentication;
 using MecaPlan.Domain.Entities;
+using MecaPlan.Application.Projects;
 
 namespace MecaPlan.Web.IntegrationTests;
 
 public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     public TestAuthenticationService Authentication { get; } = new();
+    public TestProjectIdeaService Projects { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -18,10 +20,18 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<IStudentAuthenticationService>();
             services.RemoveAll<IAuthenticationAuditWriter>();
+            services.RemoveAll<IProjectIdeaService>();
             services.AddSingleton<IStudentAuthenticationService>(Authentication);
             services.AddSingleton<IAuthenticationAuditWriter, NoOpAuditWriter>();
+            services.AddSingleton<IProjectIdeaService>(Projects);
         });
     }
+}
+
+public sealed class TestProjectIdeaService : IProjectIdeaService
+{
+    public Task<ProjectResult> CreateAsync(CreateProjectCommand command, CancellationToken ct = default) => Task.FromResult(new ProjectResult(true, 19, command.NombreProyecto, [new("Arduino Uno", 1)]));
+    public Task<ProjectResult> GetOwnedAsync(int projectId, CancellationToken ct = default) => Task.FromResult(projectId == 19 ? new ProjectResult(true, 19, "Robot", [new("Arduino Uno", 1)]) : new ProjectResult(false));
 }
 
 public sealed class TestAuthenticationService : IStudentAuthenticationService

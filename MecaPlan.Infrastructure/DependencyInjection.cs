@@ -6,6 +6,8 @@ using MecaPlan.Application.Authentication.RateLimiting;
 using MecaPlan.Infrastructure.Persistence;
 using MecaPlan.Infrastructure.Persistence.Repositories;
 using MecaPlan.Infrastructure.Security;
+using MecaPlan.Application.Projects;
+using MecaPlan.Infrastructure.Projects;
 
 namespace MecaPlan.Infrastructure;
 
@@ -21,6 +23,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationAuditWriter, AuthenticationAuditWriter>();
         services.AddSingleton<IAuthenticationAttemptPolicy, AuthenticationAttemptPolicy>();
         services.AddScoped<IStudentAuthenticationService, StudentAuthenticationService>();
+        services.AddScoped<IProyectoRepository, ProyectoRepository>();
+        services.AddSingleton<IBomGenerator, KeywordBomGenerator>();
+        services.AddScoped<IProjectIdeaService, ProjectIdeaService>();
         return services;
     }
 }
