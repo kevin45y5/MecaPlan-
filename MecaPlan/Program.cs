@@ -4,6 +4,11 @@ using MecaPlan.Infrastructure;
 using MecaPlan.Security;
 
 var builder = WebApplication.CreateBuilder(args);
+// El proyecto se ejecuta localmente por HTTP durante las prácticas.  Dejamos
+// únicamente la consola como registro para no requerir permisos de administrador
+// sobre el Visor de eventos de Windows.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentStudentContext, CurrentStudentContext>();
@@ -27,8 +32,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 app.UseExceptionHandler("/Home/Error");
-if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
