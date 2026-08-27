@@ -1,54 +1,22 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MecaPlan</title>
-    <script type="importmap"></script>
+    <meta name="theme-color" content="#12372a" />
+    <title>@ViewData["Title"] · MecaPlan</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MecaPlan.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MecaPlan</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-                            <li class="nav-item"><form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-link btn btn-link text-dark" type="submit">Cerrar sesión</button></form></li>
-                        }
-                        else
-                        {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Iniciar sesión</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Crear cuenta</a></li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - MecaPlan - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+    <header class="site-header"><nav class="site-nav container" aria-label="Navegación principal">
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="MecaPlan, inicio"><span class="brand-mark" aria-hidden="true">M</span><span>Meca<span>Plan</span></span></a>
+        <button class="nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+        <div class="collapse navbar-collapse" id="mainNavigation"><ul class="nav-links ms-auto"><li><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+        @if (User.Identity?.IsAuthenticated == true) { <li><a asp-controller="Dashboard" asp-action="Index">Mi espacio</a></li><li><a asp-controller="Projects" asp-action="Create">Nueva idea</a></li><li><form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-logout" type="submit">Cerrar sesión</button></form></li> }
+        else { <li><a asp-controller="Account" asp-action="Login">Iniciar sesión</a></li><li><a class="nav-cta" asp-controller="Account" asp-action="Register">Crear cuenta</a></li> }</ul></div>
+    </nav></header>
+    <main role="main">@RenderBody()</main>
+    <footer class="site-footer"><div class="container footer-content"><span>© 2026 MecaPlan</span><a asp-controller="Home" asp-action="Privacy">Privacidad</a><span>Planifica. Avanza. Logra.</span></div></footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script><script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script><script src="~/js/site.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts", required: false)
+</body></html>

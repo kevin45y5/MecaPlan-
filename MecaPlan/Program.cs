@@ -4,6 +4,11 @@ using MecaPlan.Infrastructure;
 using MecaPlan.Security;
 
 var builder = WebApplication.CreateBuilder(args);
+// El proyecto se ejecuta localmente por HTTP durante las prácticas.  Dejamos
+// únicamente la consola como registro para no requerir permisos de administrador
+// sobre el Visor de eventos de Windows.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentStudentContext, CurrentStudentContext>();
@@ -13,7 +18,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/Login";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        // Development is intentionally supported over local HTTP (see constitution).
+        // Outside Development, the session cookie is always HTTPS-only.
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
@@ -22,8 +31,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
-if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Home/Error"); app.UseHsts(); }
-app.UseHttpsRedirection();
+app.UseExceptionHandler("/Home/Error");
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();

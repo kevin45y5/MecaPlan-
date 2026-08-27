@@ -12,3 +12,7 @@ TestResults/
 *.db-shm
 *.db-wal
 appsettings.Local.json
+domain-build.log
+restore.log
+mecaplan-run.stdout.log
+mecaplan-run.stderr.log

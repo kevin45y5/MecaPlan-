@@ -20,7 +20,7 @@ La entidad principal será `Seguridad.Estudiantes`. La migración adaptará `Mec
 
 **Testing**: Pruebas unitarias para aplicación y dominio; pruebas de integración contra una instancia aislada de SQL Server; pruebas web de extremo a extremo/reproducibles con el host de prueba MVC. El comando exacto y los paquetes de pruebas se concretan en tareas.
 
-**Target Platform**: Aplicación web ASP.NET Core desplegada detrás de HTTPS. Desarrollo local mediante secretos de usuario o configuración inyectada fuera del repositorio; producción mediante almacén de secretos/configuración del entorno aprobado por el propietario.
+**Target Platform**: Aplicación web ASP.NET Core detrás de HTTPS. Desarrollo local con SQL Server Express, secretos de usuario y certificado HTTPS de desarrollo confiado; producción mediante configuración externa aprobada por el propietario.
 
 **Project Type**: Aplicación web MVC monolítica con capas internas separadas.
 

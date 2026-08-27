@@ -9,7 +9,7 @@ Probar de forma reproducible que SP1 registra estudiantes de manera segura, crea
 1. Solución compilada en limpio con las dependencias aprobadas.
 2. Copia aislada de la base SQL Server `MecaPlanDB` existente para desarrollo/pruebas, con cadena de conexión proporcionada fuera del repositorio.
 3. Preflight ejecutado y migración SP1 aplicada a la copia aislada, sin modificar la base original ni ignorar conflictos de datos heredados.
-4. Navegador con cookies habilitadas y HTTPS configurado donde corresponda.
+4. Navegador con cookies habilitadas. Development admite `http://localhost:5180`; HTTPS se usa en entornos no Development o cuando se elige el perfil `https`.
 
 ## Escenarios de validación manual
 

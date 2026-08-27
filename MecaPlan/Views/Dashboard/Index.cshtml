@@ -1,1 +1,5 @@
-@{ViewData["Title"]="Dashboard";}<h1>Dashboard</h1><p>Bienvenido, @User.Identity?.Name.</p>
+@{ ViewData["Title"] = "Mi espacio"; }
+<section class="dashboard"><div class="container"><div class="dashboard-welcome"><div><p>Tu espacio personal</p><h1 class="page-title">Hola, @User.Identity?.Name.</h1></div><p class="dashboard-note">Tu cuenta está lista. Pronto podrás organizar aquí cada detalle de tu semestre.</p></div>
+<div class="stats-grid"><article class="stat-card"><span>Estado de cuenta</span><strong>Activa</strong></article><article class="stat-card"><span>Sesión</span><strong>Segura</strong></article><article class="stat-card"><span>Próximo paso</span><strong>Planificar</strong></article></div>
+<article class="dashboard-panel"><h2>Este es tu punto de partida.</h2><p>Usa MecaPlan como tu espacio de referencia para construir un semestre más ordenado y manejable.</p><a class="button-secondary" asp-controller="Home" asp-action="Index">Ver inicio</a></article>
+</div></section>
