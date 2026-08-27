@@ -80,8 +80,8 @@ BEGIN
     (
         ProyectoID INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Proyectos PRIMARY KEY,
         EstudianteID INT NOT NULL,
-        NombreProyecto NVARCHAR(150) NOT NULL,
-        DescripcionIdea NVARCHAR(MAX) NOT NULL,
+        Nombre NVARCHAR(150) NOT NULL,
+        Descripcion NVARCHAR(MAX) NOT NULL,
         Estado NVARCHAR(50) NOT NULL CONSTRAINT DF_Proyectos_Estado DEFAULT N'Activo',
         FechaCreacion DATETIME2 NOT NULL CONSTRAINT DF_Proyectos_FechaCreacion DEFAULT SYSUTCDATETIME(),
         CONSTRAINT FK_Proyectos_Estudiantes FOREIGN KEY (EstudianteID)

@@ -27,6 +27,36 @@ public sealed class StudentAuthenticationServiceTests
         Assert.NotNull(repository.Added);
         Assert.Equal("HASH:Clave1!x", repository.Added!.PasswordHash);
         Assert.Equal("ANA@EXAMPLE.COM", repository.Added.EmailNormalizado);
+        Assert.Equal("MECA-001", repository.Added.Carnet);
+    }
+
+    [Fact]
+    public async Task Register_rejects_values_that_exceed_persistence_limits()
+    {
+        var repository = new FakeRepository();
+        var service = new StudentAuthenticationService(repository, new FakeHasher(), new FakeAudit(), new AuthenticationAttemptPolicy());
+
+        var result = await service.RegisterAsync(new(new string('A', 101), "Prueba", "MECA-001", "ana@example.test", "Clave1!x", "Clave1!x", "test", null));
+
+        Assert.False(result.Succeeded);
+        Assert.Null(repository.Added);
+    }
+
+    [Fact]
+    public async Task Login_rate_limit_is_scoped_by_normalized_email_and_origin()
+    {
+        var repository = new FakeRepository();
+        var audit = new FakeAudit();
+        var service = new StudentAuthenticationService(repository, new FakeHasher(), audit, new AuthenticationAttemptPolicy());
+
+        for (var attempt = 0; attempt < 5; attempt++)
+            await service.LoginAsync(new(" ana@example.com ", "incorrecta", "test", "192.0.2.10"));
+
+        await service.LoginAsync(new("ANA@example.com", "incorrecta", "test", "192.0.2.11"));
+        await service.LoginAsync(new("ana@example.com", "incorrecta", "test", "192.0.2.10"));
+
+        Assert.Equal(6, repository.EmailLookupCount);
+        Assert.Equal("192.0.2.10", audit.Events[0].OrigenMinimizado);
     }
 
     [Fact]
@@ -43,7 +73,12 @@ public sealed class StudentAuthenticationServiceTests
     private sealed class FakeRepository : IEstudianteRepository
     {
         public Estudiante? Added { get; private set; }
-        public Task<Estudiante?> FindByNormalizedEmailAsync(string email, CancellationToken ct = default) => Task.FromResult<Estudiante?>(null);
+        public int EmailLookupCount { get; private set; }
+        public Task<Estudiante?> FindByNormalizedEmailAsync(string email, CancellationToken ct = default)
+        {
+            EmailLookupCount++;
+            return Task.FromResult<Estudiante?>(null);
+        }
         public Task<Estudiante?> FindByCarnetAsync(string carnet, CancellationToken ct = default) => Task.FromResult<Estudiante?>(null);
         public Task<bool> AddAsync(Estudiante estudiante, CancellationToken ct = default) { Added = estudiante; return Task.FromResult(true); }
     }
@@ -56,6 +91,11 @@ public sealed class StudentAuthenticationServiceTests
 
     private sealed class FakeAudit : IAuthenticationAuditWriter
     {
-        public Task WriteAsync(EventoAutenticacion evento, CancellationToken ct = default) => Task.CompletedTask;
+        public List<EventoAutenticacion> Events { get; } = [];
+        public Task WriteAsync(EventoAutenticacion evento, CancellationToken ct = default)
+        {
+            Events.Add(evento);
+            return Task.CompletedTask;
+        }
     }
 }

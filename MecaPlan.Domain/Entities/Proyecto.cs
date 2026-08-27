@@ -5,17 +5,31 @@ public sealed class Proyecto
     private Proyecto() { }
 
     public Proyecto(int estudianteId, string nombreProyecto, string descripcionIdea)
+        : this(nombreProyecto, descripcionIdea, estudianteId, DateTime.UtcNow)
     {
+    }
+
+    public Proyecto(string nombre, string descripcion, int estudianteId, DateTime fechaCreacion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nombre);
+        ArgumentException.ThrowIfNullOrWhiteSpace(descripcion);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(estudianteId);
+        nombre = nombre.Trim();
+        descripcion = descripcion.Trim();
+        if (nombre.Length > 150) throw new ArgumentOutOfRangeException(nameof(nombre), "El nombre no puede superar 150 caracteres.");
+        if (descripcion.Length > 4000) throw new ArgumentOutOfRangeException(nameof(descripcion), "La descripcion no puede superar 4000 caracteres.");
         EstudianteID = estudianteId;
-        NombreProyecto = nombreProyecto;
-        DescripcionIdea = descripcionIdea;
-        FechaCreacion = DateTime.UtcNow;
+        Nombre = nombre;
+        Descripcion = descripcion;
+        FechaCreacion = fechaCreacion.Kind == DateTimeKind.Utc ? fechaCreacion : fechaCreacion.ToUniversalTime();
     }
 
     public int ProyectoID { get; private set; }
     public int EstudianteID { get; private set; }
-    public string NombreProyecto { get; private set; } = null!;
-    public string DescripcionIdea { get; private set; } = null!;
+    public string Nombre { get; private set; } = null!;
+    public string Descripcion { get; private set; } = null!;
+    public string NombreProyecto => Nombre;
+    public string DescripcionIdea => Descripcion;
     public DateTime FechaCreacion { get; private set; }
     public List<BomProyecto> EntradasBom { get; } = [];
 }

@@ -2,4 +2,17 @@
 @{ ViewData["Title"] = "BOM inicial"; }
 <section class="auth-page"><div class="auth-shell"><h1 class="auth-title">@Model.NombreProyecto</h1><h2>Lista inicial de materiales</h2>
 @if (Model.Bom.Count == 0) { <p role="status">La idea fue guardada, pero no se detectaron componentes del catálogo académico.</p> } else { <ul>@foreach (var item in Model.Bom) { <li>@item.Componente: @item.Cantidad</li> }</ul> }
+<section class="generated-code" aria-labelledby="source-code-title" data-source-code-url="@Url.Action("SourceCode", new { id = Model.ProyectoId })">
+    <h2 id="source-code-title">Código generado</h2>
+    <label class="form-label" for="target-board">Placa objetivo</label>
+    <select class="form-control" id="target-board">
+        <option value="ArduinoUno">Arduino Uno (.ino)</option>
+        <option value="Esp32">ESP32 (.cpp)</option>
+        <option value="Pic">PIC con XC8 (.c)</option>
+    </select>
+    <p id="code-file-details" role="status">Selecciona una placa para preparar el archivo.</p>
+    <pre><code id="generated-source-code"></code></pre>
+    <button class="button-primary" id="download-source-code" type="button" disabled>Descargar código</button>
+</section>
 <a class="button-primary" asp-action="Create">Registrar otra idea</a></div></section>
+@section Scripts { <script src="~/js/source-code-download.js" asp-append-version="true"></script> }

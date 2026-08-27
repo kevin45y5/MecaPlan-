@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
@@ -23,6 +24,28 @@ public sealed class ProjectEndpointsTests : IClassFixture<TestWebApplicationFact
         var created = await client.PostAsync("/Projects/Create", Form(Token(page), [new("NombreProyecto", "Robot"), new("DescripcionIdea", "Arduino y motor") ]));
         Assert.Equal("/Projects/Result/19", created.Headers.Location?.OriginalString);
     }
+
+    [Theory]
+    [InlineData("ArduinoUno", ".ino")]
+    [InlineData("Esp32", ".cpp")]
+    [InlineData("Pic", ".c")]
+    public async Task Authenticated_student_receives_pedagogical_code_with_the_board_extension(string board, string extension)
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true, BaseAddress = new Uri("https://localhost") });
+        var login = await client.GetStringAsync("/Account/Login");
+        await client.PostAsync("/Account/Login", Form(Token(login), [new("Email", "ana@example.test"), new("Password", "Clave1!x")]));
+
+        var response = await client.GetAsync($"/Projects/SourceCode/19?board={board}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var code = await response.Content.ReadFromJsonAsync<GeneratedCodeResponse>();
+        Assert.NotNull(code);
+        Assert.EndsWith(extension, code!.FileName);
+        Assert.Equal(extension, code.Extension);
+        Assert.True(code.Code.Contains("setup", StringComparison.OrdinalIgnoreCase) || code.Code.Contains("main", StringComparison.OrdinalIgnoreCase));
+        Assert.True(code.Code.Contains("loop", StringComparison.OrdinalIgnoreCase) || code.Code.Contains("while", StringComparison.OrdinalIgnoreCase));
+    }
     private static string Token(string html) => Regex.Match(html, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)", RegexOptions.IgnoreCase).Groups[1].Value;
     private static FormUrlEncodedContent Form(string token, IEnumerable<KeyValuePair<string,string>> values) => new(values.Append(new("__RequestVerificationToken", token)));
+    private sealed record GeneratedCodeResponse(string Code, string FileType, string Extension, string FileName);
 }

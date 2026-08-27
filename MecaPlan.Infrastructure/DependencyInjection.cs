@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MecaPlan.Application.Authentication;
 using MecaPlan.Application.Authentication.RateLimiting;
+using MecaPlan.Infrastructure.Bom;
 using MecaPlan.Infrastructure.Persistence;
 using MecaPlan.Infrastructure.Persistence.Repositories;
 using MecaPlan.Infrastructure.Security;
@@ -25,7 +26,10 @@ public static class DependencyInjection
         services.AddScoped<IStudentAuthenticationService, StudentAuthenticationService>();
         services.AddScoped<IProyectoRepository, ProyectoRepository>();
         services.AddSingleton<IBomGenerator, KeywordBomGenerator>();
+        services.AddSingleton<ISourceCodeGenerator, EducationalSourceCodeGenerator>();
         services.AddScoped<IProjectIdeaService, ProjectIdeaService>();
+        services.AddScoped<IBomService, DummyBomService>();
+        services.AddScoped<IProyectoCreationService, ProyectoCreationService>();
         return services;
     }
 }

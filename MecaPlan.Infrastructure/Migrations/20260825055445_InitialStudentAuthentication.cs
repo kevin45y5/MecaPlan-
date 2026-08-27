@@ -30,9 +30,9 @@ namespace MecaPlan.Infrastructure.Migrations
                         THROW 51000, 'Preflight SP1 bloqueado: falta PasswordHash.', 1;
                     IF COL_LENGTH(N'Seguridad.Estudiantes', N'EmailNormalizado') IS NULL
                         ALTER TABLE Seguridad.Estudiantes ADD EmailNormalizado NVARCHAR(256) NULL;
-                    UPDATE Seguridad.Estudiantes
-                    SET EmailNormalizado = UPPER(LTRIM(RTRIM(Email)))
-                    WHERE EmailNormalizado IS NULL;
+                    EXEC(N'UPDATE Seguridad.Estudiantes
+                          SET EmailNormalizado = UPPER(LTRIM(RTRIM(Email)))
+                          WHERE EmailNormalizado IS NULL;');
                     IF COL_LENGTH(N'Seguridad.Estudiantes', N'EstadoBit') IS NULL
                         THROW 51000, 'Preflight SP1 bloqueado: falta EstadoBit.', 1;
                     IF EXISTS (SELECT 1 FROM Seguridad.Estudiantes WHERE PasswordHash IS NULL OR LTRIM(RTRIM(PasswordHash)) = '')

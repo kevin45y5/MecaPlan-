@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using MecaPlan.Application.Authentication;
 using MecaPlan.Domain.Entities;
 
@@ -14,7 +15,16 @@ public sealed class EstudianteRepository(MecaPlanDbContext db) : IEstudianteRepo
 
     public async Task<bool> AddAsync(Estudiante estudiante, CancellationToken ct = default)
     {
-        try { db.Estudiantes.Add(estudiante); await db.SaveChangesAsync(ct); return true; }
-        catch (DbUpdateException) { return false; }
+        try
+        {
+            db.Estudiantes.Add(estudiante);
+            await db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateException exception) when (exception.GetBaseException() is SqlException { Number: 2601 or 2627 })
+        {
+            db.Entry(estudiante).State = EntityState.Detached;
+            return false;
+        }
     }
 }

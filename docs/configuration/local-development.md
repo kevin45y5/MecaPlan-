@@ -3,8 +3,18 @@
 ## Requisitos
 
 - .NET SDK 10.0.201 (la versión está fijada en `global.json`).
+- Git.
 - SQL Server o SQL Server Express.
 - SQL Server Management Studio (SSMS), recomendado para administrar la base.
+- Visual Studio con desarrollo ASP.NET/.NET, opcional.
+
+## Preparar el repositorio
+
+```powershell
+git pull origin main
+dotnet restore MecaPlan.slnx --disable-parallel -m:1
+dotnet tool restore
+```
 
 ## Base de datos local
 
@@ -22,11 +32,15 @@ dotnet user-secrets set "ConnectionStrings:MecaPlan" "Server=.\SQLEXPRESS;Databa
 
 Si se usa otra instancia, se reemplaza solamente el valor de `Server`.
 
+Aplicar las migraciones a la base local configurada:
+
+```powershell
+dotnet ef database update --project MecaPlan.Infrastructure\MecaPlan.Infrastructure.csproj --startup-project MecaPlan\MecaPlan.csproj
+```
+
 ## Ejecutar
 
 ```powershell
-dotnet restore MecaPlan.slnx --disable-parallel -m:1
-dotnet dev-certs https --trust
 dotnet run --project MecaPlan\MecaPlan.csproj --launch-profile http
 ```
 
@@ -38,3 +52,7 @@ dotnet dev-certs https --trust
 ```
 
 No versionar archivos del almacén de secretos ni copias locales de la base de datos.
+
+## API de proyectos
+
+Después de aplicar la migración más reciente, un estudiante autenticado puede registrar una idea mediante `POST /api/proyectos`. El cuerpo, estados y reglas de propiedad están documentados en `specs/002-register-prototype-ideas/contracts/proyectos-api.md`. El `EstudianteID` enviado debe coincidir con el de la sesión; nunca se usa como sustituto de la identidad autenticada.

@@ -16,6 +16,20 @@ public sealed class StudentPersistenceTests
         return new MecaPlanDbContext(new DbContextOptionsBuilder<MecaPlanDbContext>().UseSqlServer(connection).Options);
     }
 
+    [Fact]
+    public void Audit_origin_mapping_matches_the_database_column()
+    {
+        using var db = new MecaPlanDbContext(
+            new DbContextOptionsBuilder<MecaPlanDbContext>()
+                .UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=MecaPlan_ModelOnly")
+                .Options);
+
+        var property = db.Model.FindEntityType(typeof(EventoAutenticacion))!
+            .FindProperty(nameof(EventoAutenticacion.OrigenMinimizado));
+
+        Assert.Equal(100, property!.GetMaxLength());
+    }
+
     [SqlFact]
     public async Task Registration_persists_a_hash_and_rejects_duplicate_email()
     {

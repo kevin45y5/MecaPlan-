@@ -58,6 +58,24 @@ public sealed class AccountEndpointTests : IClassFixture<TestWebApplicationFacto
         Assert.Contains("No fue posible iniciar sesión con las credenciales proporcionadas.", WebUtility.HtmlDecode(html));
     }
 
+    [Fact]
+    public async Task Register_rejects_a_weak_password_before_calling_the_service()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, BaseAddress = new Uri("https://localhost") });
+        var page = await client.GetStringAsync("/Account/Register");
+        var callsBeforeRequest = _factory.Authentication.RegisterCallCount;
+
+        var response = await client.PostAsync("/Account/Register", Form(AntiforgeryToken(page), new Dictionary<string, string>
+        {
+            ["Nombre"] = "Ana", ["Apellido"] = "Prueba", ["Carnet"] = "MECA-002", ["Email"] = "ana2@example.test", ["Password"] = "solo-letras", ["Confirmation"] = "solo-letras"
+        }));
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("La contraseña debe incluir mayúscula, minúscula, número y símbolo.", html);
+        Assert.Equal(callsBeforeRequest, _factory.Authentication.RegisterCallCount);
+    }
+
     private static string AntiforgeryToken(string html)
     {
         var match = Regex.Match(html, "<input[^>]*name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"", RegexOptions.IgnoreCase);

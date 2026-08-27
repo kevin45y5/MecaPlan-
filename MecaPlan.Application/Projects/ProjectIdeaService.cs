@@ -23,6 +23,6 @@ public sealed class ProjectIdeaService(ICurrentStudentContext currentStudent, IP
         var project = await projects.FindOwnedAsync(proyectoId, currentStudent.StudentId, ct);
         if (project is null) return new(false, Error: "No fue posible encontrar el proyecto solicitado.");
         var bom = project.EntradasBom.Select(x => new BomSuggestion(x.Componente?.Nombre ?? "Componente", x.CantidadRequerida)).ToList();
-        return new(true, project.ProyectoID, project.NombreProyecto, bom);
+        return new(true, project.ProyectoID, project.NombreProyecto, bom, DescripcionIdea: project.DescripcionIdea);
     }
 }

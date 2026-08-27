@@ -23,4 +23,30 @@ public sealed class CurrentStudentContextTests
         var accessor = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
         Assert.Throws<UnauthorizedAccessException>(() => new CurrentStudentContext(accessor).StudentId);
     }
+
+    [Fact]
+    public void Rejects_a_student_claim_from_an_unauthenticated_identity()
+    {
+        var http = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("StudentId", "23")]))
+        };
+        var accessor = new HttpContextAccessor { HttpContext = http };
+
+        Assert.Throws<UnauthorizedAccessException>(() => new CurrentStudentContext(accessor).StudentId);
+    }
+
+    [Fact]
+    public void Rejects_ambiguous_student_claims()
+    {
+        var http = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("StudentId", "23"), new Claim("StudentId", "24")],
+                "test"))
+        };
+        var accessor = new HttpContextAccessor { HttpContext = http };
+
+        Assert.Throws<UnauthorizedAccessException>(() => new CurrentStudentContext(accessor).StudentId);
+    }
 }

@@ -1,4 +1,19 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("form[data-submitting-text]").forEach(form => {
+        form.addEventListener("submit", () => {
+            const jqueryForm = window.jQuery ? window.jQuery(form) : null;
+            if (!form.checkValidity() || (jqueryForm?.valid && !jqueryForm.valid())) {
+                return;
+            }
 
-// Write your JavaScript code.
+            const button = form.querySelector("button[type='submit']");
+            if (!button) {
+                return;
+            }
+
+            button.disabled = true;
+            button.setAttribute("aria-busy", "true");
+            button.textContent = form.dataset.submittingText;
+        });
+    });
+});

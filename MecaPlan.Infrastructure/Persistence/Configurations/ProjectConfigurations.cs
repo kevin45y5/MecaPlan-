@@ -9,8 +9,11 @@ public sealed class ProyectoConfiguration : IEntityTypeConfiguration<Proyecto>
     public void Configure(EntityTypeBuilder<Proyecto> b)
     {
         b.ToTable("Proyectos", "Proyectos"); b.HasKey(x => x.ProyectoID);
-        b.Property(x => x.NombreProyecto).HasMaxLength(150).IsRequired(); b.Property(x => x.DescripcionIdea).HasMaxLength(4000).IsRequired();
-        b.Property(x => x.FechaCreacion).HasDefaultValueSql("SYSUTCDATETIME()"); b.HasIndex(x => x.EstudianteID);
+        b.Property(x => x.Nombre).HasColumnName("NombreProyecto").HasMaxLength(150).IsRequired();
+        b.Property(x => x.Descripcion).HasColumnName("DescripcionIdea").HasMaxLength(4000).IsRequired();
+        b.Property(x => x.FechaCreacion).HasDefaultValueSql("SYSUTCDATETIME()");
+        b.HasOne<Estudiante>().WithMany().HasForeignKey(x => x.EstudianteID).OnDelete(DeleteBehavior.NoAction).HasConstraintName("FK_Proyectos_Estudiantes");
+        b.HasIndex(x => new { x.EstudianteID, x.FechaCreacion }).HasDatabaseName("IX_Proyectos_Estudiante_FechaCreacion");
         b.HasMany(x => x.EntradasBom).WithOne().HasForeignKey(x => x.ProyectoID).OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -106,7 +106,8 @@ namespace MecaPlan.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("OrigenMinimizado")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Resultado")
                         .IsRequired()
