@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sugoi_project · Simulador de Circuitos 2D</title>
+  <link rel="stylesheet" href="css/style.css?v=3" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===================== BARRA SUPERIOR ===================== -->
+    <header id="topbar">
+      <h1>⚡ sugoi_project</h1>
+      <input id="design-name" type="text" value="Mi circuito" title="Nombre del diseño" />
+      <button class="btn success" id="btn-run" title="Compilar y ejecutar">▶ Ejecutar</button>
+      <button class="btn" id="btn-stop" title="Detener simulación">■ Detener</button>
+      <button class="btn primary" id="btn-save" title="Guardar en MySQL">💾 Guardar</button>
+      <button class="btn" id="btn-load" title="Cargar desde MySQL">📂 Cargar</button>
+      <button class="btn" id="btn-clear" title="Limpiar lienzo">🗑 Limpiar</button>
+      <button class="btn" id="btn-debug" title="Preguntar al asistente Gemini">🐞 Depurar</button>
+      <span id="status-bar">Listo. Arrastra componentes y haz clic en terminales para cablear.</span>
+    </header>
+
+    <!-- ===================== LAYOUT PRINCIPAL ===================== -->
+    <div id="main">
+
+      <!-- ---------- PALETA DE COMPONENTES ---------- -->
+      <aside id="sidebar">
+        <h3>Componentes</h3>
+        <h4 class="palette-cat">Microcontroladores</h4>
+        <div class="palette-item" data-type="arduino_uno" data-draggable="true" title="Arduino Uno">
+          <svg viewBox="0 0 40 30"><rect x="2" y="8" width="36" height="14" rx="2" fill="#0aa"/><rect x="8" y="3" width="4" height="5" fill="#888"/><rect x="28" y="3" width="4" height="5" fill="#888"/></svg>
+          Arduino Uno
+        </div>
+        <div class="palette-item" data-type="arduino_nano" data-draggable="true" title="Arduino Nano">
+          <svg viewBox="0 0 40 30"><rect x="2" y="9" width="36" height="12" rx="2" fill="#0b8"/><rect x="6" y="6" width="4" height="3" fill="#888"/><rect x="30" y="6" width="4" height="3" fill="#888"/></svg>
+          Arduino Nano
+        </div>
+        <div class="palette-item" data-type="arduino_mega" data-draggable="true" title="Arduino Mega">
+          <svg viewBox="0 0 40 30"><rect x="2" y="8" width="36" height="15" rx="2" fill="#077"/><rect x="6" y="3" width="4" height="5" fill="#888"/><rect x="30" y="3" width="4" height="5" fill="#888"/></svg>
+          Arduino Mega
+        </div>
+        <div class="palette-item" data-type="esp32_devkit" data-draggable="true" title="ESP32 DevKit">
+          <svg viewBox="0 0 40 30"><rect x="3" y="7" width="34" height="15" rx="2" fill="#c93"/><rect x="14" y="4" width="12" height="4" rx="2" fill="#999"/></svg>
+          ESP32 DevKit
+        </div>
+        <div class="palette-item" data-type="attiny85" data-draggable="true" title="ATtiny85">
+          <svg viewBox="0 0 40 30"><rect x="10" y="4" width="20" height="22" rx="2" fill="#44a"/><circle cx="20" cy="15" r="5" fill="#fff" opacity="0.4"/></svg>
+          ATtiny85
+        </div>
+        <div class="palette-item" data-type="rp2040" data-draggable="true" title="Pico RP2040">
+          <svg viewBox="0 0 40 30"><rect x="4" y="12" width="32" height="8" rx="2" fill="#0af"/><rect x="10" y="20" width="3" height="5" fill="#048"/><rect x="16" y="20" width="3" height="5" fill="#048"/></svg>
+          Pico RP2040
+        </div>
+        <div class="palette-item" data-type="protoboard" data-draggable="true" title="Protoboard">
+          <svg viewBox="0 0 40 30"><rect x="3" y="5" width="34" height="20" rx="2" fill="#eef"/><line x1="8" y1="10" x2="32" y2="10" stroke="#99c" /><line x1="8" y1="15" x2="32" y2="15" stroke="#99c" /></svg>
+          Protoboard
+        </div>
+
+        <h4 class="palette-cat">Fuentes</h4>
+        <div class="palette-item" data-type="vcc" data-draggable="true" title="Fuente 5V">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="15" r="9" fill="#e83"/><text x="20" y="19" text-anchor="middle" font-size="9" fill="#fff">+5V</text></svg>
+          Fuente 5V
+        </div>
+        <div class="palette-item" data-type="gnd" data-draggable="true" title="Tierra">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="15" r="9" fill="#888"/><text x="20" y="19" text-anchor="middle" font-size="9" fill="#fff">GND</text></svg>
+          Tierra GND
+        </div>
+
+        <h4 class="palette-cat">Pasivos</h4>
+        <div class="palette-item" data-type="resistor" data-draggable="true" title="Resistencia">
+          <svg viewBox="0 0 40 30"><line x1="3" y1="15" x2="10" y2="15" stroke="#ca8"/><rect x="10" y="9" width="20" height="12" fill="#ca8"/><line x1="30" y1="15" x2="37" y2="15" stroke="#ca8"/></svg>
+          Resistencia
+        </div>
+        <div class="palette-item" data-type="potentiometer" data-draggable="true" title="Potenciómetro">
+          <svg viewBox="0 0 40 30"><rect x="12" y="8" width="16" height="14" rx="3" fill="#b87"/><line x1="8" y1="12" x2="12" y2="12" stroke="#b87"/><line x1="28" y1="12" x2="32" y2="12" stroke="#b87"/><line x1="20" y1="22" x2="20" y2="26" stroke="#b87"/></svg>
+          Potenciómetro
+        </div>
+        <div class="palette-item" data-type="slide_pot" data-draggable="true" title="Pot. deslizante">
+          <svg viewBox="0 0 40 30"><rect x="4" y="8" width="32" height="14" rx="2" fill="#a85"/><circle cx="20" cy="15" r="4" fill="#f4d"/></svg>
+          Pot. desliz.
+        </div>
+        <div class="palette-item" data-type="photoresistor" data-draggable="true" title="Fotorresistencia LDR">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="15" r="9" fill="#a86"/><line x1="14" y1="15" x2="26" y2="15" stroke="#531"/><line x1="20" y1="9" x2="20" y2="21" stroke="#531"/></svg>
+          Fotorresistencia
+        </div>
+        <div class="palette-item" data-type="ntc_temp" data-draggable="true" title="Sensor NTC">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="13" r="7" fill="#58a"/><circle cx="20" cy="13" r="3" fill="#fff"/><line x1="20" y1="20" x2="20" y2="27" stroke="#58a"/></svg>
+          Sensor NTC
+        </div>
+        <div class="palette-item" data-type="tilt_switch" data-draggable="true" title="Sensor inclinación">
+          <svg viewBox="0 0 40 30"><rect x="8" y="10" width="24" height="12" rx="6" fill="#666"/><circle cx="15" cy="20" r="2.5" fill="#eee"/></svg>
+          Inclinación
+        </div>
+
+        <h4 class="palette-cat">LEDs</h4>
+        <div class="palette-item" data-type="led_red" data-draggable="true" title="LED Rojo">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="11" r="6" fill="#e33"/><line x1="20" y1="17" x2="20" y2="26" stroke="#e33"/></svg>
+          LED Rojo
+        </div>
+        <div class="palette-item" data-type="led_green" data-draggable="true" title="LED Verde">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="11" r="6" fill="#3e3"/><line x1="20" y1="17" x2="20" y2="26" stroke="#3e3"/></svg>
+          LED Verde
+        </div>
+        <div class="palette-item" data-type="led_blue" data-draggable="true" title="LED Azul">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="11" r="6" fill="#35c"/><line x1="20" y1="17" x2="20" y2="26" stroke="#35c"/></svg>
+          LED Azul
+        </div>
+        <div class="palette-item" data-type="led_rgb" data-draggable="true" title="LED RGB">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="11" r="6" fill="#c3c"/><line x1="14" y1="17" x2="14" y2="26" stroke="#c3c"/><line x1="20" y1="17" x2="20" y2="26" stroke="#3c3"/><line x1="26" y1="17" x2="26" y2="26" stroke="#33c"/></svg>
+          LED RGB
+        </div>
+        <div class="palette-item" data-type="led_bar" data-draggable="true" title="Barra de LEDs">
+          <svg viewBox="0 0 40 30"><rect x="12" y="6" width="16" height="18" rx="2" fill="#333"/><line x1="15" y1="10" x2="25" y2="10" stroke="#e33"/><line x1="15" y1="14" x2="25" y2="14" stroke="#3e3"/><line x1="15" y1="18" x2="25" y2="18" stroke="#35c"/></svg>
+          Barra LED
+        </div>
+        <div class="palette-item" data-type="led_ring" data-draggable="true" title="Anillo LED">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="15" r="10" fill="none" stroke="#333" stroke-width="2"/><circle cx="20" cy="15" r="10" fill="none" stroke="#e33" stroke-width="1" opacity="0.5"/><circle cx="28" cy="15" r="2" fill="#e33"/></svg>
+          Anillo LED
+        </div>
+        <div class="palette-item" data-type="neopixel" data-draggable="true" title="NeoPixel">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="15" r="8" fill="#602"/><text x="20" y="19" text-anchor="middle" font-size="6" fill="#fff">NP</text></svg>
+          NeoPixel
+        </div>
+        <div class="palette-item" data-type="neopixel_matrix" data-draggable="true" title="Matriz NeoPixel">
+          <svg viewBox="0 0 40 30"><rect x="8" y="5" width="24" height="20" rx="2" fill="#400"/><circle cx="12" cy="9" r="2" fill="#f33"/><circle cx="18" cy="9" r="2" fill="#0f0"/><circle cx="24" cy="9" r="2" fill="#33f"/><circle cx="12" cy="15" r="2" fill="#ff0"/><circle cx="18" cy="15" r="2" fill="#f0f"/><circle cx="24" cy="15" r="2" fill="#0ff"/></svg>
+          Matriz NP
+        </div>
+
+        <h4 class="palette-cat">Botones / Interruptores</h4>
+        <div class="palette-item" data-type="button" data-draggable="true" title="Pulsador">
+          <svg viewBox="0 0 40 30"><rect x="14" y="8" width="12" height="12" rx="6" fill="#666"/><rect x="17" y="11" width="6" height="6" rx="3" fill="#ddd"/><line x1="20" y1="20" x2="20" y2="26" stroke="#666"/></svg>
+          Pulsador
+        </div>
+        <div class="palette-item" data-type="button_6mm" data-draggable="true" title="Pulsador 6mm">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="14" r="8" fill="#444"/><circle cx="20" cy="14" r="4" fill="#c00"/></svg>
+          Pulsador 6mm
+        </div>
+        <div class="palette-item" data-type="slide_switch" data-draggable="true" title="Interruptor">
+          <svg viewBox="0 0 40 30"><rect x="6" y="11" width="28" height="8" rx="4" fill="#999"/><circle cx="18" cy="15" r="5" fill="#eee"/><line x1="3" y1="15" x2="6" y2="15" stroke="#999"/><line x1="34" y1="15" x2="37" y2="15" stroke="#999"/></svg>
+          Interruptor
+        </div>
+        <div class="palette-item" data-type="dip_switch" data-draggable="true" title="DIP Switch">
+          <svg viewBox="0 0 40 30"><rect x="5" y="8" width="30" height="14" rx="2" fill="#555"/><rect x="8" y="11" width="4" height="8" fill="#ddd"/><rect x="14" y="11" width="4" height="8" fill="#ddd"/><rect x="20" y="11" width="4" height="8" fill="#ddd"/><rect x="26" y="11" width="4" height="8" fill="#ddd"/></svg>
+          DIP Switch
+        </div>
+        <div class="palette-item" data-type="membrane_keypad" data-draggable="true" title="Teclado 4x4">
+          <svg viewBox="0 0 40 30"><rect x="6" y="4" width="28" height="22" rx="2" fill="#222"/><g fill="#666"><rect x="9" y="7" width="5" height="4"/><rect x="16" y="7" width="5" height="4"/><rect x="23" y="7" width="5" height="4"/><rect x="9" y="13" width="5" height="4"/><rect x="16" y="13" width="5" height="4"/><rect x="23" y="13" width="5" height="4"/><rect x="9" y="19" width="5" height="4"/><rect x="16" y="19" width="5" height="4"/><rect x="23" y="19" width="5" height="4"/></g></svg>
+          Teclado 4x4
+        </div>
+        <div class="palette-item" data-type="rotary" data-draggable="true" title="Dial rotatorio">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="14" r="9" fill="#caa"/><circle cx="20" cy="7" r="3" fill="#eee"/><line x1="20" y1="14" x2="25" y2="9" stroke="#533"/></svg>
+          Dial giratorio
+        </div>
+
+        <h4 class="palette-cat">Actuadores</h4>
+        <div class="palette-item" data-type="buzzer" data-draggable="true" title="Buzzer">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="12" r="8" fill="#d77"/><line x1="14" y1="20" x2="14" y2="27" stroke="#d77"/><line x1="26" y1="20" x2="26" y2="27" stroke="#d77"/></svg>
+          Buzzer
+        </div>
+        <div class="palette-item" data-type="servo" data-draggable="true" title="Servo">
+          <svg viewBox="0 0 40 30"><rect x="12" y="4" width="16" height="16" rx="3" fill="#fb5"/><line x1="8" y1="24" x2="20" y2="27" stroke="#fb5"/><line x1="32" y1="24" x2="20" y2="27" stroke="#fb5"/></svg>
+          Servo
+        </div>
+        <div class="palette-item" data-type="stepper" data-draggable="true" title="Motor paso a paso">
+          <svg viewBox="0 0 40 30"><rect x="12" y="10" width="16" height="10" rx="2" fill="#788"/><circle cx="20" cy="15" r="3" fill="#c99"/><line x1="14" y1="20" x2="14" y2="26" stroke="#788"/><line x1="20" y1="20" x2="20" y2="26" stroke="#788"/><line x1="26" y1="20" x2="26" y2="26" stroke="#788"/></svg>
+          Motor paso
+        </div>
+        <div class="palette-item" data-type="relay" data-draggable="true" title="Relé">
+          <svg viewBox="0 0 40 30"><rect x="8" y="6" width="24" height="18" rx="2" fill="#456"/><circle cx="16" cy="15" r="4" fill="none" stroke="#9ad" stroke-width="2"/><circle cx="27" cy="15" r="2" fill="#9ad"/></svg>
+          Relé
+        </div>
+
+        <h4 class="palette-cat">Sensores</h4>
+        <div class="palette-item" data-type="dht22" data-draggable="true" title="Sensor DHT22">
+          <svg viewBox="0 0 40 30"><rect x="9" y="6" width="22" height="18" rx="3" fill="#5a5"/><circle cx="16" cy="13" r="2" fill="#fff" opacity="0.6"/><circle cx="24" cy="13" r="2" fill="#fff" opacity="0.6"/><rect x="10" y="17" width="5" height="4" fill="#4a4"/><rect x="18" y="17" width="5" height="4" fill="#4a4"/><rect x="26" y="17" width="4" height="4" fill="#4a4"/></svg>
+          DHT22
+        </div>
+        <div class="palette-item" data-type="hc_sr04" data-draggable="true" title="Ultrasónico HC-SR04">
+          <svg viewBox="0 0 40 30"><rect x="6" y="7" width="28" height="16" rx="3" fill="#38383c"/><circle cx="17" cy="15" r="3.5" fill="#6ee"/><circle cx="24" cy="15" r="3.5" fill="#6ee"/></svg>
+          Ultrasónico
+        </div>
+        <div class="palette-item" data-type="pir" data-draggable="true" title="Sensor PIR">
+          <svg viewBox="0 0 40 30"><rect x="14" y="4" width="12" height="16" rx="5" fill="#eee"/><line x1="10" y1="20" x2="30" y2="20" stroke="#aaa" stroke-width="2"/></svg>
+          Sensor PIR
+        </div>
+        <div class="palette-item" data-type="flame" data-draggable="true" title="Sensor de llama">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="12" r="8" fill="#e83"/><circle cx="17" cy="10" r="3" fill="#ff0"/></svg>
+          Llama
+        </div>
+        <div class="palette-item" data-type="gas" data-draggable="true" title="Sensor de gas MQ">
+          <svg viewBox="0 0 40 30"><rect x="8" y="4" width="24" height="22" rx="2" fill="#384"/><circle cx="16" cy="10" r="3" fill="#0f0" opacity="0.5"/><circle cx="24" cy="10" r="3" fill="#0f0" opacity="0.5"/><circle cx="20" cy="17" r="4" fill="#0f0" opacity="0.5"/></svg>
+          Gas MQ
+        </div>
+        <div class="palette-item" data-type="sound" data-draggable="true" title="Micrófono">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="13" r="7" fill="#a83"/><circle cx="20" cy="13" r="2" fill="#531"/><line x1="20" y1="20" x2="20" y2="25" stroke="#a83"/></svg>
+          Micrófono
+        </div>
+        <div class="palette-item" data-type="mpu6050" data-draggable="true" title="IMU MPU6050">
+          <svg viewBox="0 0 40 30"><rect x="10" y="7" width="20" height="16" rx="2" fill="#66c"/><circle cx="20" cy="15" r="5" fill="#9af"/></svg>
+          IMU 6050
+        </div>
+        <div class="palette-item" data-type="hx711" data-draggable="true" title="Celdas HX711">
+          <svg viewBox="0 0 40 30"><rect x="10" y="9" width="20" height="12" rx="2" fill="#776"/><line x1="20" y1="6" x2="20" y2="9" stroke="#776"/></svg>
+          HX711
+        </div>
+        <div class="palette-item" data-type="joystick" data-draggable="true" title="Joystick">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="14" r="10" fill="#555"/><circle cx="20" cy="14" r="4" fill="#ddd"/></svg>
+          Joystick
+        </div>
+        <div class="palette-item" data-type="ir_receiver" data-draggable="true" title="Receptor IR">
+          <svg viewBox="0 0 40 30"><circle cx="20" cy="13" r="6" fill="#333"/><circle cx="20" cy="13" r="2" fill="#93f"/></svg>
+          Receptor IR
+        </div>
+
+        <h4 class="palette-cat">Displays</h4>
+        <div class="palette-item" data-type="seg7" data-draggable="true" title="Display 7 segmentos">
+          <svg viewBox="0 0 40 30"><g stroke="#e33" stroke-width="2" fill="none"><line x1="13" y1="8" x2="27" y2="8"/><line x1="29" y1="10" x2="29" y2="14"/><line x1="29" y1="16" x2="29" y2="20"/><line x1="13" y1="22" x2="27" y2="22"/><line x1="11" y1="16" x2="11" y2="20"/><line x1="11" y1="10" x2="11" y2="14"/></g><circle cx="31" cy="16" r="1.5" fill="#e33"/></svg>
+          7-seg
+        </div>
+        <div class="palette-item" data-type="lcd1602" data-draggable="true" title="LCD 16x2">
+          <svg viewBox="0 0 40 30"><rect x="5" y="6" width="30" height="18" rx="2" fill="#278"/><line x1="8" y1="11" x2="32" y2="11" stroke="#8cf"/><line x1="8" y1="16" x2="32" y2="16" stroke="#8cf"/><line x1="8" y1="20" x2="32" y2="20" stroke="#8cf"/></svg>
+          LCD 16x2
+        </div>
+        <div class="palette-item" data-type="lcd2004" data-draggable="true" title="LCD 20x4">
+          <svg viewBox="0 0 40 30"><rect x="4" y="7" width="32" height="16" rx="2" fill="#278"/><line x1="7" y1="10" x2="33" y2="10" stroke="#8cf"/><line x1="7" y1="13" x2="33" y2="13" stroke="#8cf"/><line x1="7" y1="16" x2="33" y2="16" stroke="#8cf"/><line x1="7" y1="19" x2="33" y2="19" stroke="#8cf"/></svg>
+          LCD 20x4
+        </div>
+        <div class="palette-item" data-type="oled" data-draggable="true" title="OLED SSD1306">
+          <svg viewBox="0 0 40 30"><rect x="6" y="7" width="28" height="16" rx="2" fill="#004"/><text x="20" y="19" text-anchor="middle" font-size="10" fill="#0f0">OLED</text></svg>
+          OLED 0.96"
+        </div>
+        <div class="palette-item" data-type="tft" data-draggable="true" title="TFT ILI9341">
+          <svg viewBox="0 0 40 30"><rect x="8" y="4" width="24" height="20" rx="2" fill="#044"/><rect x="10" y="6" width="20" height="16" fill="#0c8"/></svg>
+          TFT 2.8"
+        </div>
+        <div class="palette-item" data-type="microsd" data-draggable="true" title="MicroSD">
+          <svg viewBox="0 0 40 30"><rect x="9" y="6" width="22" height="18" rx="3" fill="#555"/><rect x="13" y="9" width="5" height="5" fill="#ddd"/></svg>
+          MicroSD
+        </div>
+        <div class="palette-item" data-type="rtc" data-draggable="true" title="RTC DS1307">
+          <svg viewBox="0 0 40 30"><rect x="9" y="6" width="22" height="18" rx="3" fill="#c85"/><circle cx="20" cy="15" r="7" fill="#fda"/><line x1="20" y1="15" x2="20" y2="10" stroke="#530"/><line x1="20" y1="15" x2="23" y2="15" stroke="#530"/></svg>
+          RTC DS1307
+        </div>
+      </aside>
+
+      <!-- ---------- LIENZO ---------- -->
+      <div id="workspace">
+        <div id="konva-container"></div>
+        <!-- Overlay HTML para wokwi-elements (sincronizado con Konva) -->
+        <div id="wokwi-overlay"></div>
+      </div>
+
+      <!-- ---------- PANEL INSPECTOR ---------- -->
+      <aside id="inspector">
+        <h3>Inspector</h3>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="code">Código</button>
+          <button class="tab-btn" data-tab="pinout">Pinout</button>
+          <button class="tab-btn" data-tab="bom">BOM</button>
+          <button class="tab-btn" data-tab="assistant">Asistente</button>
+        </div>
+        <div class="tab-panels">
+          <!-- Código -->
+          <div class="tab-panel active" id="panel-code">
+            <h4>Arduino C++</h4>
+            <textarea id="code-editor" spellcheck="false"></textarea>
+          </div>
+          <!-- Pinout -->
+          <div class="tab-panel" id="panel-pinout">
+            <h4>Mapeo de pines (JSON en vivo)</h4>
+            <pre class="json" id="pinout-json">{}</pre>
+          </div>
+          <!-- BOM -->
+          <div class="tab-panel" id="panel-bom">
+            <h4>Estimación de costo (BOM)</h4>
+            <table class="bom">
+              <thead>
+                <tr><th>Componente</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr>
+              </thead>
+              <tbody id="bom-body">
+                <tr><td colspan="4">Agrega componentes para calcular.</td></tr>
+              </tbody>
+            </table>
+            <div class="bom-totals">
+              <div class="row"><span>Subtotal</span><span id="bom-subtotal">0.00</span></div>
+              <div class="row grand"><span>Total (<span id="bom-currency">USD</span>)</span><span id="bom-total">0.00</span></div>
+            </div>
+          </div>
+          <!-- Asistente -->
+          <div class="tab-panel" id="panel-assistant">
+            <h4>Asistente de depuración (Gemini)</h4>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">
+              Envía el pinout y el código para detectar cortocircuitos y errores de sintaxis.
+            </p>
+            <div id="assistant-output">
+              <p>Usa el botón <strong>🐞 Depurar</strong> de la barra superior.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Modal de carga de diseños -->
+  <div id="load-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Diseños guardados (MySQL)</h3>
+        <button class="close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul id="design-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LIBRERÍAS (CDN) + CONFIG + MÓDULOS
+       Orden:
+       1) config.js             (script normal -> window.SUGOI_CONFIG)
+       2) CDN: Konva, wokwi-elements
+       3) IIFE módulos: canvasEngine, services, ui
+       4) main.js               (ES module: businessLogic + simEngine)
+       ============================================================ -->
+  <script src="config.js?v=3"></script>
+
+  <!-- Konva.js -->
+  <script src="https://cdn.jsdelivr.net/npm/konva@9.3.11/konva.min.js"></script>
+
+  <!-- wokwi-elements (SVG de placas y componentes) -->
+  <script src="https://unpkg.com/@wokwi/elements@0.48.3/dist/wokwi-elements.bundle.js"></script>
+
+  <!-- Módulos IIFE -->
+  <script src="js/canvasEngine.js?v=3"></script>
+  <script src="js/services.js?v=3"></script>
+  <script src="js/ui.js?v=3"></script>
+
+  <!-- Bootstrap (ES module) -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

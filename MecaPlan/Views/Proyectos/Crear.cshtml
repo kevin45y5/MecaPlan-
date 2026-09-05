@@ -1,0 +1,73 @@
+@model CrearProyectoViewModel
+@{
+    ViewData["Title"] = "Crear proyecto";
+}
+
+<section class="app-card app-card-form">
+    <h1>Crear proyecto</h1>
+    <p class="app-lead">Indica la placa, la idea, lo que ya tienes y, si quieres, piezas que el proyecto debe usar aunque no las tengas.</p>
+
+    <form asp-action="Crear" method="post" class="auth-form" id="crearProyectoForm" data-loading-button="#crearProyectoSubmit">
+        <div asp-validation-summary="ModelOnly" class="auth-errors"></div>
+
+        <div class="form-group">
+            <label asp-for="NombreProyecto"></label>
+            <input asp-for="NombreProyecto" placeholder="Ej. Brazo robótico clasificador" />
+            <span asp-validation-for="NombreProyecto" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Microcontrolador"></label>
+            <input asp-for="Microcontrolador" list="placas" placeholder="Arduino Uno, ESP32, Pico…" />
+            <datalist id="placas">
+                <option value="Arduino Uno"></option>
+                <option value="Arduino Nano"></option>
+                <option value="Arduino Mega"></option>
+                <option value="ESP32"></option>
+                <option value="ESP8266"></option>
+                <option value="Raspberry Pi Pico"></option>
+                <option value="STM32"></option>
+            </datalist>
+            <span asp-validation-for="Microcontrolador" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NivelComplejidad"></label>
+            <select asp-for="NivelComplejidad">
+                <option value="">Selecciona un nivel</option>
+                <option value="Básico">Básico</option>
+                <option value="Intermedio">Intermedio</option>
+                <option value="Avanzado">Avanzado</option>
+            </select>
+            <span asp-validation-for="NivelComplejidad" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DescripcionIdea"></label>
+            <textarea asp-for="DescripcionIdea" rows="5" placeholder="Qué debe hacer, cómo lo imaginas y para quién es."></textarea>
+            <span asp-validation-for="DescripcionIdea" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MaterialesPrevios">Materiales que ya tienes <span class="opcional">(opcional)</span></label>
+            <textarea asp-for="MaterialesPrevios" rows="3" placeholder="Sensores, motores, protoboard… Sepáralos con comas. Si no tienes nada, deja esto vacío."></textarea>
+            <span asp-validation-for="MaterialesPrevios" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MaterialesRequeridos">Materiales requeridos (no los tienes) <span class="opcional">(opcional)</span></label>
+            <textarea asp-for="MaterialesRequeridos" rows="3" placeholder="Piezas que el proyecto debe usar aunque no las tengas. Ej. servo SG90, sensor ultrasónico. Si no marcas ninguno, la IA los sugiere."></textarea>
+            <span asp-validation-for="MaterialesRequeridos" class="field-error"></span>
+        </div>
+
+        <button type="submit" class="auth-submit" id="crearProyectoSubmit" data-loading-text="Generando lista de materiales…">Generar</button>
+    </form>
+
+    <p class="auth-footer">
+        <a asp-controller="Home" asp-action="Index">Volver al inicio</a>
+    </p>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

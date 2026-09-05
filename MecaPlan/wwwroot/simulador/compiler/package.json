@@ -1,0 +1,54 @@
+{
+  "name": "@horang-corp/avr-gcc-wasm",
+  "version": "0.2.0",
+  "description": "Compile Arduino AVR firmware (atmega328p / Uno) to Intel HEX entirely in the browser with AVR GCC + binutils built for WebAssembly.",
+  "type": "module",
+  "license": "SEE LICENSE IN THIRD_PARTY_NOTICES.md",
+  "main": "./index.js",
+  "module": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./worker": "./worker.js",
+    "./firmware-builder": "./firmware-builder.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "worker.js",
+    "firmware-builder.js",
+    "tools/",
+    "assets/",
+    "THIRD_PARTY_NOTICES.md",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./tools/*.mjs"
+  ],
+  "scripts": {
+    "prepare-assets": "node scripts/prepare-assets.mjs",
+    "serve": "python3 -m http.server 4173 --bind 127.0.0.1",
+    "prepublishOnly": "node scripts/prepare-assets.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/horang-corp/avr-gcc-wasm.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "arduino",
+    "avr",
+    "atmega328p",
+    "wasm",
+    "webassembly",
+    "compiler",
+    "gcc",
+    "intel-hex",
+    "firmware"
+  ],
+  "devDependencies": {}
+}

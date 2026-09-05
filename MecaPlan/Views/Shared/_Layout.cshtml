@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MecaPlan</title>
+    <partial name="_ThemeInit" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/biblioteca.css" asp-append-version="true" />
+</head>
+<body class="app-body@(ViewData["Workspace"] as bool? == true ? " is-workspace" : null)">
+    <header class="app-header">
+        <nav class="app-nav" aria-label="Principal">
+            <a class="app-brand" asp-controller="Home" asp-action="Index">
+                <span class="app-brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                </span>
+                MecaPlan
+            </a>
+
+            <button type="button" class="app-nav-toggle" id="navToggle" aria-expanded="false" aria-controls="appNavMenu" aria-label="Abrir menú">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="app-nav-menu" id="appNavMenu">
+                @{
+                    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+                    string NavClass(string controller) =>
+                        string.Equals(ctrl, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+                    string InicioClass() =>
+                        string.Equals(ctrl, "Home", StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase)
+                            ? "active"
+                            : "";
+                }
+                <ul class="app-nav-links">
+                    <li>
+                        <a class="@InicioClass()" asp-controller="Home" asp-action="Index">Inicio</a>
+                    </li>
+                    <li>
+                        <a class="@NavClass("Proyectos")" asp-controller="Proyectos" asp-action="Index">Proyectos</a>
+                    </li>
+                    <li>
+                        <a class="@NavClass("Esquemas")" asp-controller="Esquemas" asp-action="Index">Mis Esquemas</a>
+                    </li>
+                    <li>
+                        <a class="@NavClass("Biblioteca")" asp-controller="Biblioteca" asp-action="Index" title="Biblioteca / Documentación">Biblioteca</a>
+                    </li>
+                </ul>
+
+                <div class="app-nav-actions">
+                    @{
+                        ViewData["ThemeToggleClass"] = "theme-toggle-nav";
+                    }
+                    <partial name="_ThemeToggle" />
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button" class="app-btn app-btn-nav" data-mecachat-open="mecaChatModal">Asistente IA</button>
+                        <span class="app-user">@User.Identity.Name</span>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="app-btn app-btn-nav">Cerrar sesión</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="app-main@(ViewData["Wide"] as bool? == true ? " app-main-wide" : null)@(ViewData["Full"] as bool? == true ? " app-main-full" : null)@(ViewData["Workspace"] as bool? == true ? " app-main-workspace" : null)">
+        @RenderBody()
+    </main>
+
+    @if (ViewData["Workspace"] as bool? != true)
+    {
+        <footer class="app-footer">
+            &copy; 2026 MecaPlan
+        </footer>
+    }
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="meca-modal" id="mecaChatModal" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="meca-modal-backdrop" data-mecachat-close></div>
+            <div class="meca-modal-panel dia-page">
+                <header class="dia-topbar" style="border-radius:18px 0 0 0;">
+                    <div class="dia-topbar-info">
+                        <div class="dia-topbar-titulo">
+                            <h1 style="margin:0;">Asistente IA</h1>
+                            <p class="app-lead" style="margin:0;">Claude revisa tu circuito y te propone una solución.</p>
+                        </div>
+                        <button type="button" class="dia-offcanvas-cerrar" data-mecachat-close aria-label="Cerrar">✕</button>
+                    </div>
+                </header>
+                <div data-mecachat class="meca-modal-body">
+                    <div>
+                        <label for="mecaChatProyecto" class="meca-chat-label">Proyecto</label>
+                        <select id="mecaChatProyecto" class="mecachat-proyecto"></select>
+                    </div>
+                    <div class="dia-chat mecachat-chat" id="mecaChatChat" aria-live="polite"></div>
+                    <form class="dia-input mecachat-form" id="mecaChatForm">
+                        <textarea class="mecachat-mensaje" rows="1" placeholder="Describe qué le falla a tu circuito…" required></textarea>
+                        <button type="submit" class="dia-send mecachat-send" aria-label="Enviar">➤</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var modal = document.getElementById('mecaChatModal');
+                function abrir() { modal.setAttribute('aria-hidden', 'false'); modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
+                function cerrar() { modal.setAttribute('aria-hidden', 'true'); modal.classList.remove('open'); document.body.style.overflow = ''; }
+                document.querySelectorAll('[data-mecachat-open="mecaChatModal"]').forEach(function (b) { b.addEventListener('click', abrir); });
+                modal.querySelectorAll('[data-mecachat-close]').forEach(function (b) { b.addEventListener('click', cerrar); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) cerrar(); });
+                window.mecaChatAbrir = abrir;
+                window.mecaChatCerrar = cerrar;
+            })();
+        </script>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/chatWidget.js" asp-append-version="true"></script>
+    <script src="~/js/biblioteca.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

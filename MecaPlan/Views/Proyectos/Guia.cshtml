@@ -1,0 +1,162 @@
+@model GuiaEnsamblajeViewModel
+@{
+    ViewData["Title"] = Model.Proyecto.NombreProyecto;
+    ViewData["Wide"] = true;
+}
+
+<section class="guia">
+    <div class="guia-head app-card app-card-form">
+        <p class="app-kicker">@Model.Proyecto.NivelComplejidad · @Model.Proyecto.Estado</p>
+        <h1>Guía de ensamblaje · @Model.Proyecto.NombreProyecto</h1>
+        <p class="app-lead">@Model.Proyecto.DescripcionIdea</p>
+        <p>
+            <a class="app-btn app-btn-nav" asp-action="Workspace" asp-route-id="@Model.Proyecto.ProyectoID">&larr; Volver al canvas</a>
+        </p>
+    </div>
+
+    <h2 class="app-section-title">1. Componentes que necesitas</h2>
+    <div class="guia-grid">
+        @foreach (var comp in Model.Componentes)
+        {
+            <div class="guia-card @(comp.EnInventario ? "is-stock" : "is-new")">
+                <img class="guia-card-img" src="@comp.UrlImagen" alt="@comp.Nombre" />
+                <div class="guia-card-body">
+                    <h3 class="guia-card-title">@comp.Nombre</h3>
+                    <p class="guia-card-desc">@comp.Descripcion</p>
+                    @if (!string.IsNullOrWhiteSpace(comp.Motivo))
+                    {
+                        <p class="guia-card-motivo">Para este proyecto: @comp.Motivo</p>
+                    }
+                    <span class="guia-card-meta @(comp.EnInventario ? "is-stock" : "is-new")">
+                        x@(comp.Cantidad) · @(comp.EnInventario ? "En inventario" : "Faltante")
+                    </span>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Proyecto.InstruccionesGeneradas))
+    {
+        <h2 class="app-section-title">2. Qué se conecta con qué</h2>
+        <div class="app-card app-card-form">
+            <p class="app-body-text guia-instrucciones">@Model.Proyecto.InstruccionesGeneradas</p>
+        </div>
+
+        <h2 class="app-section-title">Pines de conexión</h2>
+    }
+    else
+    {
+        <h2 class="app-section-title">2. Cómo se conecta (qué pin va a qué pin)</h2>
+    }
+    @if (Model.Conexiones.Count == 0)
+    {
+        <p class="app-empty">Aún no hay conexiones definidas para este proyecto.</p>
+    }
+    else
+    {
+        <ul class="app-list guia-conexiones">
+            @foreach (var con in Model.Conexiones)
+            {
+                <li class="guia-conexion" data-color="@con.Color">
+                    <span class="guia-conexion-pin">@con.OrigenComponente <em>@con.OrigenPin</em></span>
+                    <span class="guia-conexion-cable">
+                        <i class="guia-dot" style="background:@ColorHex(con.Color)"></i>
+                        cable @con.Color →
+                    </span>
+                    <span class="guia-conexion-pin">@con.DestinoComponente <em>@con.DestinoPin</em></span>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Model.Proyecto.PasosEnsamblaje.Count > 0)
+    {
+        <h2 class="app-section-title">3. Tutorial paso a paso</h2>
+        <ol class="app-steps guia-pasos">
+            @foreach (var paso in Model.Proyecto.PasosEnsamblaje.OrderBy(p => p.NumeroPaso))
+            {
+                <li>
+                    <h3>Paso @paso.NumeroPaso · @paso.Titulo</h3>
+                    <p>@paso.Descripcion</p>
+                </li>
+            }
+        </ol>
+    }
+
+    <h2 class="app-section-title">4. Alimentación y recomendaciones</h2>
+    <div class="app-card app-card-form">
+        <ul class="app-list">
+            <li><strong>VCC / 5V:</strong> conecta la alimentación positiva (cable rojo) desde la fuente al carril <em>+</em> de la protoboard.</li>
+            <li><strong>GND:</strong> conecta tierra (cable negro) desde la fuente al carril <em>−</em> de la protoboard.</li>
+            <li>Comparte el <strong>GND</strong> entre la placa, los sensores y los actuadores para que todas las señales tengan referencia común.</li>
+            @if (EsIntermedioOMas)
+            {
+                <li>Conecta los pines de <strong>señal</strong> del sensor/servo a pines digitales o analógicos de la placa (revisa la lista de conexiones arriba).</li>
+                <li>No alimentes el circuito mientras haces conexiones: <strong>desconecta la fuente</strong> antes de mover cables.</li>
+            }
+            @if (EsAvanzado)
+            {
+                <li>Los pines <strong>PWM</strong> del Arduino son 3, 5, 6, 9, 10 y 11: úsalos para servo o atenuación de LED.</li>
+                <li>Verifica el <strong>consumo de corriente</strong>: los actuadores grandes no deben salir directo del pin 5V de la placa.</li>
+                <li>Revisa la <strong>polaridad</strong> de la fuente: invertir VCC/GND puede dañar componentes.</li>
+            }
+        </ul>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Proyecto.CodigoGenerado))
+    {
+        <h2 class="app-section-title">5. Código C++</h2>
+        <pre class="app-code"><code>@Model.Proyecto.CodigoGenerado</code></pre>
+        <p class="guia-nota-simple">Este es el mismo código que ves y puedes editar en el canvas del proyecto.</p>
+    }
+</section>
+
+@functions {
+    public string Nivel => (Model.Proyecto.NivelComplejidad ?? "").Trim().ToLowerInvariant();
+
+    public bool EsIntermedioOMas =>
+        Nivel.Contains("intermedio") || Nivel.Contains("avanzado") || Nivel.Contains("alto");
+
+    public bool EsAvanzado =>
+        Nivel.Contains("avanzado") || Nivel.Contains("alto");
+
+    private static string ColorHex(string color)
+    {
+        switch ((color ?? "").ToLowerInvariant())
+        {
+            case "rojo":
+            case "red":
+                return "#ef4444";
+            case "amarillo":
+            case "yellow":
+                return "#eab308";
+            case "verde":
+            case "green":
+                return "#22c55e";
+            case "azul":
+            case "blue":
+                return "#3b82f6";
+            case "naranja":
+            case "orange":
+                return "#f97316";
+            case "negro":
+            case "black":
+                return "#111827";
+            case "blanco":
+            case "white":
+                return "#e5e7eb";
+            case "morado":
+            case "morado1":
+                return "#8b5cf6";
+            case "cafe":
+            case "marron":
+            case "brown":
+                return "#92400e";
+            case "gris":
+            case "gray":
+                return "#94a3b8";
+            default:
+                return "#94a3b8";
+        }
+    }
+}

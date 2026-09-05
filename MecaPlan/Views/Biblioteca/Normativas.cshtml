@@ -1,0 +1,127 @@
+@model MecaPlan.Models.ViewModels.NormativasHubViewModel
+@{
+    ViewData["Title"] = "Biblioteca > Normativas y Seguridad";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav class="bib-breadcrumb" aria-label="breadcrumb">
+        <a asp-action="Index">Biblioteca</a>
+        <span class="bib-breadcrumb-sep">/</span>
+        <span class="bib-breadcrumb-current">Normativas y Seguridad</span>
+    </nav>
+
+    <!-- Hero Header -->
+    <div class="bib-hero">
+        <div class="bib-hero-content">
+            <span class="bib-badge-pill">Seguridad y Estándares</span>
+            <h1>Normativas y Seguridad de Laboratorio</h1>
+            <p>Protocolos obligatorios para la prevención de riesgos eléctricos, térmicos y mecánicos en bancos de trabajo, junto con estándares de codificación de firmware seguro.</p>
+        </div>
+    </div>
+
+    <!-- Normas Grid -->
+    <div class="bib-normas-grid">
+        @foreach (var norma in Model.Normativas)
+        {
+            <div class="bib-norma-card" id="norma-@norma.Id">
+                <div class="bib-card-header-flex">
+                    <span class="bib-chip">@norma.CodigoNorma</span>
+                    <span class="bib-risk-badge @(norma.NivelRiesgo == "Alto" ? "high" : norma.NivelRiesgo == "Medio" ? "medium" : "info")">
+                        Riesgo @norma.NivelRiesgo
+                    </span>
+                </div>
+
+                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--bib-text-main); margin: 0 0 6px;">
+                    @norma.Titulo
+                </h3>
+
+                <p style="font-size: 0.85rem; color: var(--bib-text-muted); line-height: 1.45; margin: 0 0 10px;">
+                    @norma.Descripcion
+                </p>
+
+                <!-- Requisitos EPP -->
+                <div style="font-size: 0.76rem; font-weight: 700; color: var(--bib-text-main); margin-top: 6px;">Equipo de Protección Requerido (EPP):</div>
+                <div class="bib-epp-list">
+                    @foreach (var epp in norma.RequisitosEPP)
+                    {
+                        <div class="bib-epp-item">@epp</div>
+                    }
+                </div>
+
+                <!-- Procedimiento Paso a Paso -->
+                <div style="font-size: 0.76rem; font-weight: 700; color: var(--bib-text-main); margin-top: 10px; margin-bottom: 6px;">Pasos Obligatorios:</div>
+                <div class="bib-stepper-wrap">
+                    @foreach (var paso in norma.PasosProcedimiento)
+                    {
+                        <div class="bib-step-box" style="padding: 10px 12px; gap: 10px;">
+                            <div class="bib-step-num" style="width: 22px; height: 22px; font-size: 0.75rem;">@paso.Paso</div>
+                            <div class="bib-step-content">
+                                <h4 style="font-size: 0.86rem; margin-bottom: 2px;">@paso.Titulo</h4>
+                                <p style="font-size: 0.8rem; margin-bottom: 4px;">@paso.Descripcion</p>
+                                @if (!string.IsNullOrEmpty(paso.Advertencia))
+                                {
+                                    <div style="font-size: 0.74rem; color: var(--bib-red-badge-text); font-weight: 600;">Aviso: @paso.Advertencia</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Alertas Contextuales -->
+                @if (norma.AlertasProyectosRelacionados.Any())
+                {
+                    <div class="bib-callout-advice" style="margin-top: 12px; font-size: 0.78rem; padding: 8px 10px;">
+                        @foreach (var alerta in norma.AlertasProyectosRelacionados)
+                        {
+                            <div>@alerta</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Sección de Firma Digital de Estudiante -->
+    <div class="bib-signoff-box">
+        <div class="bib-signoff-header">
+            <div>
+                <h3>Constancia de Cumplimiento y Seguridad de Banco</h3>
+                <p style="font-size: 0.84rem; color: var(--bib-text-muted); margin: 2px 0 0;">
+                    Valida que has leído los protocolos y portas el equipo de protección antes de encender fuentes o soldar.
+                </p>
+            </div>
+            <span class="bib-chip micro">Estudiante: @Model.NombreEstudiante</span>
+        </div>
+
+        <form id="formSignOffNormativas" onsubmit="generarCertificadoDigital(event)" style="display: flex; flex-direction: column; gap: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--bib-text-main); cursor: pointer;">
+                <input type="checkbox" id="chkEppVerificado" required />
+                <span>Confirmo que porto gafas de seguridad, pulsera antiestática y he revisado la continuidad de tierras.</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--bib-text-main); cursor: pointer;">
+                <input type="checkbox" id="chkNormasLeidas" required />
+                <span>He comprendido los límites de corriente de las fuentes y las precauciones con cargas inductivas.</span>
+            </label>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap;">
+                <input type="text" id="txtFirmaEstudiante" placeholder="Escribe tu nombre completo para firmar..." class="bib-search-input" style="flex: 1; min-width: 220px;" required />
+                <button type="submit" class="bib-btn-open-manual" style="width: auto; padding: 8px 20px;">
+                    Firmar y Generar Constancia
+                </button>
+            </div>
+        </form>
+
+        <!-- Certificado Generado -->
+        <div id="bibCertificadoResult" class="bib-digital-cert-result" style="display: none;">
+            <div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--bib-yellow-primary);">Constancia Digital Activa</div>
+                <div id="certNumeroFolio" style="font-size: 1rem; font-weight: 800; color: var(--bib-text-main);">CERT-MECA-2026-0000</div>
+                <div id="certDetalles" style="font-size: 0.78rem; color: var(--bib-text-muted);">Emitido para estudiante</div>
+            </div>
+            <button type="button" class="bib-pill active yellow" onclick="imprimirConstancia()">
+                Imprimir Constancia
+            </button>
+        </div>
+    </div>
+</div>

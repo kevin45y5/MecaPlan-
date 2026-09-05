@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<section class="app-card app-home-hero">
+    <h1>Hola, @User.Identity?.Name</h1>
+    <p>Empieza un proyecto de mecatrónica a partir de tu idea.</p>
+    @if (TempData["Aviso"] is string aviso)
+    {
+        <p class="app-notice">@aviso</p>
+    }
+    <a class="app-btn app-btn-lg" asp-controller="Proyectos" asp-action="Crear">Crear proyecto</a>
+</section>

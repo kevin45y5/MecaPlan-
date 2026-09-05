@@ -1,0 +1,71 @@
+services:
+  # ------------------------------------------------------------
+  # MySQL 8 : base de datos persistente de diseños.
+  # Expuesto en localhost:3306 para conectar con DBeaver
+  # (usuario: sugoi  /  password: ${MYSQL_PASSWORD} del .env)
+  # ------------------------------------------------------------
+  simulacion_2D_db:
+    image: mysql:8
+    container_name: simulacion_2D_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: simulacion_2D
+      MYSQL_USER: sugoi
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # Linux/mac el host 3306 ya lo usa el contenedor 'mysql_citas' de otro
+    # proyecto; por eso mapeamos 3307->3306 para no chocar. La API se
+    # conecta por la red interna de contenedores (no usa este puerto host).
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ------------------------------------------------------------
+  # API Node/Express : CRUD de diseños + proxy de Gemini.
+  # Se conecta al MySQL interno (no a localhost).
+  # ------------------------------------------------------------
+  simulacion_2D_api:
+    build: ./server
+    image: sugoi/simulacion-2d-api
+    container_name: simulacion_2D_api
+    restart: unless-stopped
+    environment:
+      DB_HOST: simulacion_2D_db
+      DB_PORT: 3306
+      DB_USER: sugoi
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: simulacion_2D
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      PORT: 3001
+    depends_on:
+      simulacion_2D_db:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
+  # ------------------------------------------------------------
+  # Frontend estático servido por nginx.
+  # ------------------------------------------------------------
+  simulacion_2D_web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: sugoi/simulacion-2d-web
+    container_name: simulacion_2D_web
+    restart: unless-stopped
+    depends_on:
+      - simulacion_2D_api
+    ports:
+      - "8080:80"
+
+volumes:
+  mysql_data:

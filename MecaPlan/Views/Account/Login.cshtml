@@ -1,0 +1,124 @@
+@model LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="auth-page">
+    <div class="auth-haze"></div>
+    <div class="auth-orb auth-orb-a"></div>
+    <div class="auth-orb auth-orb-b"></div>
+
+    <div class="auth-container">
+        <!-- Info panel -->
+        <div class="auth-info">
+            <div class="auth-info-content">
+                <div class="auth-info-logo">
+                    <div class="auth-info-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                    </div>
+                    <span class="auth-info-logo-text">MecaPlan</span>
+                </div>
+
+                <ul class="auth-features">
+                    <li class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"/>
+                                <circle cx="12" cy="15" r="2"/>
+                            </svg>
+                        </div>
+                        <div class="auth-feature-text">
+                            <h3>IA como guía personal</h3>
+                            <p>Recibe orientación inteligente para diseñar y planificar tus proyectos.</p>
+                        </div>
+                    </li>
+                    <li class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8"/>
+                                <path d="M12 17v4"/>
+                            </svg>
+                        </div>
+                        <div class="auth-feature-text">
+                            <h3>Proyectos paso a paso</h3>
+                            <p>Crea proyectos mecatrónicos completos con instrucciones detalladas.</p>
+                        </div>
+                    </li>
+                    <li class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="auth-feature-text">
+                            <h3>Hecho para estudiantes</h3>
+                            <p>Diseñado especialmente para que aprendas mientras creas.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Form panel -->
+        <div class="auth-form-panel">
+            <div class="auth-brand-header">
+                <div class="auth-brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1>¡Bienvenido!</h1>
+            <p class="auth-subtitle">Ingresa tus datos para continuar</p>
+
+            <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="auth-form">
+                <div asp-validation-summary="ModelOnly" class="auth-errors"></div>
+
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" autocomplete="username" placeholder="correo@ejemplo.com" />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password"></label>
+                    <div class="password-wrap">
+                        <input asp-for="Password" autocomplete="current-password" placeholder="••••••••" />
+                        <button type="button" class="password-toggle" data-toggle-password="Password" aria-label="Mostrar contraseña">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" />
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <div class="auth-row">
+                    <label class="remember">
+                        <input asp-for="RememberMe" />
+                        <span>Recordarme</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit">Iniciar sesión</button>
+            </form>
+
+            <p class="auth-footer">
+                ¿No tienes cuenta? <a asp-action="Register">Regístrate</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

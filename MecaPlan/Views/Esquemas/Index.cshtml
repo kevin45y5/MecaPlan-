@@ -1,0 +1,149 @@
+@{
+    ViewData["Title"] = "Mis Esquemas";
+    ViewData["Wide"] = true;
+}
+
+<section class="app-card app-card-form">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div>
+            <h1 style="margin:0;">Mis Esquemas</h1>
+            <p class="app-lead" style="margin:6px 0 0;">Tus diseños guardados desde el Simulador 2D, sincronizados en un solo lugar.</p>
+        </div>
+        <a class="app-btn" href="/Simulador">Nuevo diseño</a>
+    </div>
+
+    <div id="esquemas-status" style="margin-top:16px; font-size:13px; color:var(--auth-muted);" style="margin-top:16px; font-size:13px;">Cargando tus esquemas…</div>
+
+    <div id="esquemas-grid" class="app-gallery-grid" style="margin-top:16px;"></div>
+
+    <div id="esquemas-empty" style="display:none; text-align:center; padding:48px 16px; color:var(--auth-muted);">
+        <p style="font-size:16px; font-weight:600; color:var(--auth-ink);">Todavía no tienes esquemas guardados.</p>
+        <p style="font-size:13px;">Entra al Simulador 2D, diseña tu circuito y pulsa <strong>Guardar</strong> para verlo aquí con su miniatura.</p>
+        <a class="app-btn" href="/Simulador" style="margin-top:16px; display:inline-block;">Ir al Simulador</a>
+    </div>
+</section>
+
+@section Scripts {
+    <style>
+        #esquemas-grid.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #esquemas-grid .app-gallery-tile { gap: 10px; }
+        #esquemas-grid .app-gallery-tile .thumb {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--auth-field-border);
+            background: var(--auth-bg);
+        }
+        #esquemas-grid .app-gallery-tile .thumb.placeholder {
+            display: flex; align-items: center; justify-content: center;
+            color: var(--auth-muted); font-size: 13px; background: var(--auth-field-bg);
+        }
+        #esquemas-grid .app-gallery-tile .meta { display: flex; flex-direction: column; gap: 4px; }
+        #esquemas-grid .app-gallery-tile .meta .fecha { font-size: 12px; }
+        #esquemas-grid .app-gallery-tile .acciones { display: flex; gap: 8px; margin-top: 4px; }
+        #esquemas-grid .app-gallery-tile .acciones .app-btn { flex: 1; text-align: center; text-decoration: none; }
+        .app-btn-danger {
+            background: var(--auth-error); color: #fff;
+            border: none; border-radius: 10px; padding: 9px 12px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .app-btn-danger:hover { opacity: .88; }
+    </style>
+    <script>
+        (function () {
+            const grid = document.getElementById('esquemas-grid');
+            const status = document.getElementById('esquemas-status');
+            const empty = document.getElementById('esquemas-empty');
+
+            async function cargar() {
+                status.style.display = 'block';
+                status.textContent = 'Cargando tus esquemas…';
+                grid.innerHTML = '';
+                empty.style.display = 'none';
+                try {
+                    const res = await fetch('/api/simulacion/designs?proyectoId=0', {
+                        credentials: 'same-origin'
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    const disenos = Array.isArray(data) ? data : (data.data || data.disenos || []);
+                    status.style.display = 'none';
+                    if (!disenos || disenos.length === 0) { empty.style.display = 'block'; return; }
+                    grid.classList.add('grid-3');
+                    disenos.forEach(d => grid.appendChild(crearCard(d)));
+                } catch (e) {
+                    status.style.display = 'block';
+                    status.textContent = 'No se pudieron cargar los esquemas: ' + e.message;
+                }
+            }
+
+            function crearCard(d) {
+                const tile = document.createElement('article');
+                tile.className = 'app-gallery-tile';
+
+                const thumbs = document.createElement('div');
+                thumbs.className = 'thumb';
+                if (d.thumbnailBase64) {
+                    const img = document.createElement('img');
+                    img.className = 'thumb';
+                    img.src = d.thumbnailBase64;
+                    img.alt = d.nombre;
+                    thumbs.replaceWith(img);
+                    tile.appendChild(img);
+                } else {
+                    thumbs.classList.add('placeholder');
+                    thumbs.textContent = 'Sin miniatura';
+                    tile.appendChild(thumbs);
+                }
+
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+                const strong = document.createElement('strong');
+                strong.textContent = d.nombre || 'Sin nombre';
+                const fecha = document.createElement('div');
+                fecha.className = 'fecha';
+                const ff = d.fechaActualizacion || d.fechaCreacion;
+                fecha.textContent = ff ? 'Actualizado: ' + new Date(ff).toLocaleString() : '';
+                meta.appendChild(strong);
+                meta.appendChild(fecha);
+                tile.appendChild(meta);
+
+                const acciones = document.createElement('div');
+                acciones.className = 'acciones';
+
+                const abrir = document.createElement('a');
+                abrir.className = 'app-btn';
+                abrir.href = '/Simulador/Index?id=' + d.proyectoID + '&diseno=' + d.simulacionDisenoID;
+                abrir.textContent = 'Abrir en Simulador';
+
+                const eliminar = document.createElement('button');
+                eliminar.className = 'app-btn-danger';
+                eliminar.textContent = 'Eliminar';
+                eliminar.addEventListener('click', () => eliminarDiseno(d));
+
+                acciones.appendChild(abrir);
+                acciones.appendChild(eliminar);
+                tile.appendChild(acciones);
+                return tile;
+            }
+
+            async function eliminarDiseno(d) {
+                if (!d || !d.simulacionDisenoID) return;
+                if (!confirm('¿Eliminar el esquema «' + (d.nombre || '') + '»? Esta acción no se puede deshacer.')) return;
+                try {
+                    const res = await fetch('/api/simulacion/designs/' + d.simulacionDisenoID, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    });
+                    if (!res.ok && res.status !== 404) throw new Error('HTTP ' + res.status);
+                    cargar();
+                } catch (e) {
+                    alert('No se pudo eliminar el esquema: ' + e.message);
+                }
+            }
+
+            cargar();
+        })();
+    </script>
+}

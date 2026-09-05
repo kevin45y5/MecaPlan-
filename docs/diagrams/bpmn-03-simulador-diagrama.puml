@@ -1,0 +1,26 @@
+@startuml
+!theme plain
+title BPMN — Simulador 2D → Diagrama (Workspace)
+
+start
+:Abre Simulador de un proyecto;
+:Agrega componentes en el lienzo 2D (Konva);
+:Conecta terminales con cables;
+:Etiquetas automáticas por cable (pin → pin);
+:Crea wire con pan del lienzo;
+if (¿Guardar diseño?) then (Sí)
+  :Serializa PINOUT (nodes + connections);
+  :ApiSaveDesign guarda SimulacionDiseno (.PinoutJson);
+  :Sincroniza Proyecto.ConexionesCanvas (origen/destino/color_cable);
+else
+endif
+if (¿Acomodar con IA?) then (Sí)
+  :ApiAiManageConnections (Claude);
+  :Valida/ordena conexiones y rebuildConnections;
+else
+endif
+:Accede al Workspace/diagrama (ReactFlow);
+:Guarda código generado y canvas;
+:Reporta diagnóstico si hay falla;
+stop
+@enduml

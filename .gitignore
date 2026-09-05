@@ -1,0 +1,31 @@
+# ---- .NET / Visual Studio ----
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.vshost.exe
+
+# ---- Secretos locales de config ----
+appsettings.Development.json
+appsettings.Production.json
+Simulador/.env
+.env
+!.env.example
+
+# ---- Node / npm ----
+node_modules/
+dist/
+*.tsbuildinfo
+
+# ---- Logs y artefactos de prueba ----
+Simulador/build.log
+Simulador/gemini-test.js
+Simulador/check-palette.js
+Simulador/replace-defs.js
+
+# ---- Otros ----
+Thumbs.db
+.desktop.ini
+.DS_Store

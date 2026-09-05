@@ -1,0 +1,15 @@
+@startuml
+!theme plain
+title BPMN — Creación de proyecto y BOM (Proyectos)
+
+start
+:Estudiante autenticado crea proyecto;
+:Describe idea, complejidad y microcontrolador;
+:IA genera lista de materiales y faltantes (Claude);
+:Confirma BOM de componentes;
+if (¿Hay faltantes?) then (Sí)
+  :Muestra material previo / lo solicita;
+endif
+:Proyecto queda en "En Desarrollo";
+stop
+@enduml

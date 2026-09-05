@@ -1,0 +1,190 @@
+@model MecaPlan.Models.ViewModels.DatasheetsListViewModel
+@{
+    ViewData["Title"] = "Biblioteca > Hojas de Datos / Fichas Técnicas";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav class="bib-breadcrumb" aria-label="breadcrumb">
+        <a asp-action="Index">Biblioteca</a>
+        <span class="bib-breadcrumb-sep">/</span>
+        <span class="bib-breadcrumb-current">Hojas de Datos y Fichas Técnicas</span>
+    </nav>
+
+    <!-- Hero Header -->
+    <div class="bib-hero">
+        <div class="bib-hero-content">
+            <span class="bib-badge-pill">Especificaciones de Hardware</span>
+            <h1>Hojas de Datos y Fichas Técnicas</h1>
+            <p>Parámetros eléctricos, tablas de patillaje (pinout), protocolos de comunicación soportados y límites térmicos de los componentes disponibles en el inventario mecatrónico.</p>
+        </div>
+    </div>
+
+    <!-- Toolbar: Search & Category Pills -->
+    <div class="bib-toolbar">
+        <form method="get" asp-action="Datasheets" class="bib-search-box" id="formSearchDatasheets">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" name="query" value="@Model.Query" class="bib-search-input" placeholder="Búsqueda semántica (ej: I2C 3.3V, puente H, giroscopio, PWM)..." />
+            <input type="hidden" name="categoria" value="@Model.CategoriaSeleccionada" />
+            <input type="hidden" name="soloBom" value="@(Model.SoloEnBom ? "true" : "false")" />
+        </form>
+
+        <div class="bib-filter-pills">
+            @foreach (var cat in Model.Categorias)
+            {
+                <a asp-action="Datasheets" asp-route-categoria="@cat" asp-route-query="@Model.Query" asp-route-soloBom="@Model.SoloEnBom"
+                   class="bib-pill @(Model.CategoriaSeleccionada == cat ? "active" : "")">
+                    @cat
+                </a>
+            }
+            <a asp-action="Datasheets" asp-route-categoria="@Model.CategoriaSeleccionada" asp-route-query="@Model.Query" asp-route-soloBom="@(!Model.SoloEnBom)"
+               class="bib-pill @(Model.SoloEnBom ? "active yellow" : "")">
+                En lista BOM
+            </a>
+        </div>
+    </div>
+
+    <!-- Datasheets Grid -->
+    <div class="bib-datasheets-grid">
+        @foreach (var comp in Model.Componentes)
+        {
+            <div class="bib-ds-card @(comp.EnBomUsuario ? "is-in-bom" : "")" id="ds-card-@comp.Id">
+                @if (comp.EnBomUsuario)
+                {
+                    <div class="bib-bom-highlight-badge">En lista BOM</div>
+                }
+
+                <div class="bib-ds-head">
+                    <div class="bib-ds-title-wrap">
+                        <h3>@comp.Nombre</h3>
+                        <div class="bib-ds-mfg">@comp.Fabricante • @comp.Categoria</div>
+                    </div>
+                </div>
+
+                <p class="bib-ds-desc">
+                    @comp.DescripcionCorta
+                </p>
+
+                <!-- Technical Specs Summary Grid -->
+                <div class="bib-ds-specs-grid">
+                    <div class="bib-spec-slot">
+                        <div class="bib-spec-label">Voltaje de Operación</div>
+                        <div class="bib-spec-val">@comp.VoltajeOperacion</div>
+                    </div>
+                    <div class="bib-spec-slot">
+                        <div class="bib-spec-label">Protocolos / Bus</div>
+                        <div class="bib-spec-val">@comp.Protocolos</div>
+                    </div>
+                    <div class="bib-spec-slot">
+                        <div class="bib-spec-label">Consumo Nominal</div>
+                        <div class="bib-spec-val">@comp.Consumo</div>
+                    </div>
+                    <div class="bib-spec-slot bib-spec-slot-stock">
+                        <div class="bib-spec-label">Almacén MecaPlan</div>
+                        <div class="bib-spec-val bib-spec-val-stock">
+                            <span class="bib-stock-inline @(comp.StockInventario > 0 ? "is-in-stock" : "is-out-of-stock")">
+                                @(comp.StockInventario > 0 ? $"{comp.StockInventario} unidades" : "Agotado")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Tags -->
+                <div class="bib-tags-row">
+                    @foreach (var tag in comp.TagsTecnicos.Take(4))
+                    {
+                        <span class="bib-chip">@tag</span>
+                    }
+                </div>
+
+                <!-- Actions -->
+                <div class="bib-ds-actions">
+                    <button type="button" class="bib-btn-quick-view" onclick="abrirModalDatasheet('@comp.Id')">
+                        Ficha Rápida y Pinout
+                    </button>
+                    <a href="@comp.UrlPdf" class="bib-btn-pdf" target="_blank" rel="noopener">
+                        PDF
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal de Ficha Técnica Rápida & Tabla de Pines -->
+<div id="bibDsModalBackdrop" class="bib-modal-backdrop" onclick="cerrarModalDatasheet(event)">
+    <div class="bib-modal-window" onclick="event.stopPropagation()">
+        <div class="bib-modal-header">
+            <div class="bib-modal-title-wrap">
+                <h2 id="modalDsNombre">Ficha Técnica</h2>
+                <div class="bib-modal-subtitle">
+                    <span id="modalDsFabricante">Fabricante</span>
+                    <span>•</span>
+                    <span id="modalDsCategoria">Categoría</span>
+                </div>
+            </div>
+            <button type="button" class="bib-modal-close-btn" onclick="cerrarModalDatasheetDirecto()" aria-label="Cerrar">✕</button>
+        </div>
+
+        <div class="bib-modal-body">
+            <!-- Resumen Técnico -->
+            <div class="bib-ds-specs-grid bib-ds-specs-grid-modal">
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Voltaje Operación</div>
+                    <div class="bib-spec-val" id="modalDsVoltaje">-</div>
+                </div>
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Pines I/O</div>
+                    <div class="bib-spec-val" id="modalDsPines">-</div>
+                </div>
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Protocolos Soportados</div>
+                    <div class="bib-spec-val" id="modalDsProtocolos">-</div>
+                </div>
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Consumo de Corriente</div>
+                    <div class="bib-spec-val" id="modalDsConsumo">-</div>
+                </div>
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Frecuencia / Clock</div>
+                    <div class="bib-spec-val" id="modalDsFrecuencia">-</div>
+                </div>
+                <div class="bib-spec-slot">
+                    <div class="bib-spec-label">Encapsulado</div>
+                    <div class="bib-spec-val" id="modalDsPackage">-</div>
+                </div>
+            </div>
+
+            <!-- Notas de Aplicación -->
+            <div class="bib-callout-advice" id="modalDsNotas" style="margin-bottom: 16px;">
+                <!-- Inyectado vía JS -->
+            </div>
+
+            <!-- Tabla de Pinout -->
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--bib-text-main); margin: 0 0 8px;">Distribución y Función de Pines (Pinout)</h4>
+            <div class="bib-bom-table-wrap">
+                <table class="bib-table">
+                    <thead>
+                        <tr>
+                            <th>Pin / Terminal</th>
+                            <th>Nombre de Señal</th>
+                            <th>Tipo</th>
+                            <th>Función Principal</th>
+                            <th>Notas de Diseño</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalDsPinoutTbody">
+                        <!-- Inyectado vía JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payload JSON -->
+<script>
+    window.mecaDatasheetsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Componentes));
+</script>

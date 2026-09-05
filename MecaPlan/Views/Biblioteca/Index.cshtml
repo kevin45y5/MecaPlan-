@@ -1,0 +1,118 @@
+@model MecaPlan.Models.ViewModels.BibliotecaIndexViewModel
+@{
+    ViewData["Title"] = "Biblioteca y Documentación Técnica";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav class="bib-breadcrumb" aria-label="breadcrumb">
+        <span class="bib-breadcrumb-current">Biblioteca Central</span>
+    </nav>
+
+    <!-- Hero Banner -->
+    <div class="bib-hero">
+        <div class="bib-hero-content">
+            <span class="bib-badge-pill">Repositorio Técnico Mecatrónico</span>
+            <h1>Biblioteca y Documentación Técnica</h1>
+            <p>Accede a manuales de ensamble detallados, hojas de datos con diagramas de pines, protocolos de seguridad y tutoriales interactivos con simulación en tiempo real.</p>
+            
+            <div class="bib-stats-row">
+                <div class="bib-stat-item">
+                    <span class="bib-stat-val">@Model.TotalManuales</span>
+                    <span class="bib-stat-label">Manuales de Proyecto</span>
+                </div>
+                <div class="bib-stat-item">
+                    <span class="bib-stat-val yellow">@Model.TotalDatasheets</span>
+                    <span class="bib-stat-label">Fichas Técnicas</span>
+                </div>
+                <div class="bib-stat-item">
+                    <span class="bib-stat-val">@Model.TotalNormativas</span>
+                    <span class="bib-stat-label">Normas y Seguridad</span>
+                </div>
+                <div class="bib-stat-item">
+                    <span class="bib-stat-val yellow">@Model.TotalGuias</span>
+                    <span class="bib-stat-label">Guías Interactivas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Subviews Feature Cards Grid -->
+    <div class="bib-main-grid">
+        <!-- 1. Manuales de Proyecto -->
+        <a asp-action="Manuales" class="bib-feature-card">
+            <div class="bib-card-title">
+                <span>Manuales de Proyecto</span>
+                <span class="bib-card-badge">@Model.TotalManuales Proyectos</span>
+            </div>
+            <p class="bib-card-desc">Instrucciones de ensamble paso a paso, lista de materiales (BOM), asignación de pines y checklists de verificación funcional.</p>
+            <ul class="bib-card-features-list">
+                <li>Lista de componentes con stock de almacén</li>
+                <li>Diagramas esquemáticos y conexiones</li>
+                <li>Firmware base con notas de catedráticos</li>
+                <li>Checklist de validación y control de calidad</li>
+            </ul>
+            <div class="bib-card-btn-action">
+                <span>Explorar Manuales</span>
+                <span>→</span>
+            </div>
+        </a>
+
+        <!-- 2. Datasheets / Fichas Técnicas -->
+        <a asp-action="Datasheets" class="bib-feature-card highlight-yellow">
+            <div class="bib-card-title">
+                <span>Hojas de Datos</span>
+                <span class="bib-card-badge">@Model.TotalDatasheets Componentes</span>
+            </div>
+            <p class="bib-card-desc">Especificaciones eléctricas, voltajes de operación, protocolos de comunicación y asignación de pines para microcontroladores, sensores y actuadores.</p>
+            <ul class="bib-card-features-list">
+                <li>Integración con BOM de proyectos activos</li>
+                <li>Fichas resumidas de especificación rápida</li>
+                <li>Tablas de pinout y voltajes tolerados</li>
+                <li>Búsqueda por protocolo o interfaz (I2C, SPI, PWM)</li>
+            </ul>
+            <div class="bib-card-btn-action">
+                <span>Consultar Datasheets</span>
+                <span>→</span>
+            </div>
+        </a>
+
+        <!-- 3. Normativas y Seguridad -->
+        <a asp-action="Normativas" class="bib-feature-card">
+            <div class="bib-card-title">
+                <span>Normativas y Seguridad</span>
+                <span class="bib-card-badge">@Model.TotalNormativas Estándares</span>
+            </div>
+            <p class="bib-card-desc">Protocolos obligatorios de laboratorio, directrices de manejo térmico, protección electrostática (ESD) y firma de responsabilidad de banco.</p>
+            <ul class="bib-card-features-list">
+                <li>Seguridad eléctrica y límites de corriente</li>
+                <li>Manejo seguro de soldadura y químicos</li>
+                <li>Protección contra transitorios y Back-EMF</li>
+                <li>Constancia y firma digital de estudiante</li>
+            </ul>
+            <div class="bib-card-btn-action">
+                <span>Revisar Normativas</span>
+                <span>→</span>
+            </div>
+        </a>
+
+        <!-- 4. Guías y Tutoriales Interactivos -->
+        <a asp-action="Guias" class="bib-feature-card highlight-yellow">
+            <div class="bib-card-title">
+                <span>Guías Interactivas</span>
+                <span class="bib-card-badge">@Model.TotalGuias Módulos</span>
+            </div>
+            <p class="bib-card-desc">Tutoriales técnicos con simulador de lazo cerrado PID, entorno de pruebas de firmware en C++, videos con marcadores y cuestionarios de autoevaluación.</p>
+            <ul class="bib-card-features-list">
+                <li>Simulador visual de respuesta PID al escalón</li>
+                <li>Playground de código C++ con consola serie</li>
+                <li>Filtros sensoriales de Kalman y complementario</li>
+                <li>Evaluaciones técnicas de conocimiento</li>
+            </ul>
+            <div class="bib-card-btn-action">
+                <span>Abrir Tutoriales</span>
+                <span>→</span>
+            </div>
+        </a>
+    </div>
+</div>

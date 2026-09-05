@@ -1,0 +1,105 @@
+@model WorkspaceViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = Model.Proyecto.NombreProyecto;
+    ViewData["Workspace"] = true;
+}
+
+<div class="workspace" data-proyecto-id="@Model.Proyecto.ProyectoID">
+    <header class="workspace-topbar">
+        <div class="workspace-top-left">
+            <div class="workspace-toolbar workspace-code-actions">
+                <button type="button" class="app-btn app-btn-nav" id="copiarCodigo">Copiar</button>
+                <button type="button" class="app-btn app-btn-nav" id="guardarCodigo">Guardar</button>
+                <button type="button" class="bom-remove" id="cerrarCodigo">Cerrar código</button>
+            </div>
+        </div>
+        <div class="workspace-mode-switch" role="group" aria-label="Modo de vista">
+            <span class="workspace-mode-label">Modo:</span>
+            <a class="workspace-mode-opt is-active" asp-controller="Proyectos" asp-action="Workspace" asp-route-id="@Model.Proyecto.ProyectoID">Diagrama</a>
+            <a class="workspace-mode-opt" asp-controller="Simulador" asp-action="Index" asp-route-id="@Model.Proyecto.ProyectoID">2D</a>
+        </div>
+        <div class="workspace-top-right">
+            <div class="workspace-toolbar">
+                <a class="app-btn app-btn-nav" asp-action="Guia" asp-route-id="@Model.Proyecto.ProyectoID">Guía de ensamblaje</a>
+                <button type="button" class="app-btn app-btn-nav" id="toggleCodigo">Código</button>
+                <button type="button" class="app-btn app-btn-nav" id="toggleDiagnostico">Diagnóstico</button>
+                <button type="button" class="bom-remove workspace-chat-actions" id="cerrarChat" aria-label="Cerrar diagnóstico">Cerrar diagnóstico</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="workspace-body">
+        <section class="workspace-panel workspace-code">
+            <div id="monacoEditor" class="workspace-editor"></div>
+            <div class="workspace-resizer" data-resize="code" title="Arrastra para cambiar el ancho"></div>
+        </section>
+
+        <section class="workspace-panel workspace-canvas-wrap">
+            <div class="workspace-canvas" id="workspaceCanvas">
+                <div id="reactFlowRoot" style="width:100%;height:100%;"></div>
+                <p class="workspace-canvas-hint">Arrastra los componentes. Conecta de un pin a otro. Guarda para persistir.</p>
+            </div>
+        </section>
+
+        <aside class="workspace-panel workspace-chat" id="workspaceChat">
+            <div class="workspace-resizer workspace-resizer-left" data-resize="chat" title="Arrastra para cambiar el ancho"></div>
+            <div class="workspace-chat-body">
+                @if (TempData["Aviso"] is string aviso)
+                {
+                    <p class="app-notice">@aviso</p>
+                }
+                <form asp-action="ReportarDiagnostico" asp-route-id="@Model.Proyecto.ProyectoID" method="post" class="auth-form" data-loading-button=".auth-submit">
+                    <div asp-validation-summary="ModelOnly" class="auth-errors"></div>
+                    <div class="form-group">
+                        <label asp-for="TipoError"></label>
+                        <select asp-for="TipoError">
+                            <option value="">Selecciona un problema</option>
+                            <option value="Se rompió un cable">Se rompió un cable</option>
+                            <option value="No enciende">No enciende</option>
+                            <option value="El sensor no responde">El sensor no responde</option>
+                            <option value="El actuador no se mueve">El actuador no se mueve</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DescripcionFalla"></label>
+                        <textarea asp-for="DescripcionFalla" rows="4" placeholder="Ej. se rompió un cable, no enciende, huele a quemado…"></textarea>
+                    </div>
+                    <button type="submit" class="auth-submit" data-loading-text="Enviando reporte…">Reportar error</button>
+                </form>
+
+                <h3 class="app-section-title">Reportes</h3>
+                @if (Model.Proyecto.Diagnosticos.Count == 0)
+                {
+                    <p class="app-empty">Aún no hay reportes de este proyecto.</p>
+                }
+                else
+                {
+                    <ul class="app-list">
+                        @foreach (var item in Model.Proyecto.Diagnosticos.OrderByDescending(d => d.FechaReporte))
+                        {
+                            <li>
+                                <strong>@item.TipoError</strong>
+                                <span>@item.DescripcionFalla</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script type="application/json" id="workspaceCode">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Proyecto.CodigoGenerado ?? string.Empty))</script>
+<script type="application/json" id="workspaceConexiones">@Html.Raw(Model.ConexionesJson)</script>
+<script type="application/json" id="workspacePosiciones">@Html.Raw(Model.PosicionesJson)</script>
+<script type="application/json" id="workspaceComponentes">@Html.Raw(Model.ComponentesJson)</script>
+<input type="hidden" id="codigoToken" value="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section Scripts {
+    <link rel="stylesheet" href="~/canvas/assets/main.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+    <script type="module" src="~/canvas/assets/canvas.js" asp-append-version="true"></script>
+    <script src="~/js/workspace.js" asp-append-version="true"></script>
+}

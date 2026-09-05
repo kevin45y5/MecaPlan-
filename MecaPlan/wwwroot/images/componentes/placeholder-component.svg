@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-label="Componente">
+  <rect x="60" y="30" width="80" height="80" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="3" stroke-dasharray="6 4"/>
+  <circle cx="100" cy="70" r="22" fill="none" stroke="#64748b" stroke-width="3"/>
+  <circle cx="100" cy="70" r="8" fill="#64748b"/>
+</svg>

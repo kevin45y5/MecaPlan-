@@ -1,0 +1,12 @@
+# ============================================================
+# sugoi_project :: frontend estático -> nginx
+# ============================================================
+FROM nginx:1.27-alpine
+
+# Config personalizada (proxy de la API + inyección de env de clientes)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Estáticos
+COPY public/ /usr/share/nginx/html/
+
+EXPOSE 80

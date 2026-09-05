@@ -1,0 +1,16 @@
+@startuml
+!theme plain
+title BPMN — Guía de ensamblaje y diagnóstico (Guia / Diagnosticos)
+
+start
+:Estudiante abre la guía del proyecto;
+:Marca pasos de ensamblaje como completados (NumeroPaso);
+if (¿Falla el circuito?) then (Sí)
+  :Reporta Diagnostico (tipo, descripción);
+  :IA sugiere solución (Claude);
+  :Resuelve y registra FechaResolucion;
+else (No)
+endif
+:Proyecto avanza / se retoma;
+stop
+@enduml

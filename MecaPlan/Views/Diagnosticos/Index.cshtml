@@ -1,0 +1,74 @@
+@model DiagnosticoIndexViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Diagnóstico";
+    ViewData["Wide"] = true;
+    var token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<div class="dia-page">
+    <header class="dia-topbar">
+        <div class="dia-topbar-info">
+            <div class="dia-topbar-titulo">
+                <h1>Diagnóstico / Soporte IA</h1>
+                <p class="app-lead">
+                    Describe una falla de tu proyecto y un ingeniero IA cruzará el problema con tus
+                    componentes, conexiones y código para <strong>descartar causas imposibles</strong> y darte una solución.
+                </p>
+            </div>
+            <div class="dia-selector">
+                <label for="diaProyecto">Proyecto</label>
+                <select id="diaProyecto">
+                    @foreach (var p in Model.Proyectos)
+                    {
+                        <option value="@p.ProyectoID">@p.Nombre</option>
+                    }
+                </select>
+                <input type="hidden" id="diaToken" value="@token" />
+            </div>
+        </div>
+    </header>
+
+    @if (Model.Proyectos.Count == 0)
+    {
+        <div class="app-card app-card-form dia-sin-proyectos">
+            <p class="app-empty">Aún no tienes proyectos. Crea uno desde <a asp-controller="Proyectos" asp-action="Crear">Proyectos</a> para poder diagnosticarlo.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Overlay de cierre del cajón -->
+        <div class="dia-overlay" id="diaOverlay" onclick="diaCerrarHistorial()"></div>
+
+        <!-- Cajón lateral (Offcanvas) con el historial -->
+        <aside class="dia-offcanvas" id="diaOffcanvas" aria-hidden="true">
+            <div class="dia-offcanvas-header">
+                <h2>Historial</h2>
+                <button type="button" class="dia-offcanvas-cerrar" onclick="diaCerrarHistorial()" aria-label="Cerrar historial">✕</button>
+            </div>
+            <div class="dia-offcanvas-body">
+                <p id="offhistEmpty" class="dia-hist-empty">Selecciona un proyecto para ver sus diagnósticos.</p>
+                <div id="offHistorialContent" class="dia-historial" style="display:none;"></div>
+            </div>
+        </aside>
+
+        <!-- Chat a ancho completo -->
+        <main class="dia-chat-main">
+            <div class="dia-header">
+                <h2>Diagnóstico / Soporte IA</h2>
+                <button type="button" class="dia-hist-abrir" onclick="diaAbrirHistorial()">📋 Ver Historial</button>
+            </div>
+
+            <div class="dia-chat" id="diaChat" aria-live="polite"></div>
+
+            <form class="dia-input" id="diaForm">
+                <textarea id="diaMensaje" rows="1" placeholder="Escribe qué le falla a tu circuito… (p. ej. el motor no gira, el LED no enciende)" required></textarea>
+                <button type="submit" class="dia-send" id="diaEnviar" aria-label="Enviar">➤</button>
+            </form>
+        </main>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/diagnostico.js" asp-append-version="true"></script>
+}

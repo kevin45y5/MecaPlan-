@@ -1,0 +1,241 @@
+@model MecaPlan.Models.ViewModels.GuiasListViewModel
+@{
+    ViewData["Title"] = "Guías y Tutoriales Interactivos";
+    var selectedGuia = Model.Guias.FirstOrDefault(g => g.Id == Model.GuiaSeleccionadaId) ?? Model.Guias.FirstOrDefault();
+    var guias = Model.Guias.ToList();
+    var idx = selectedGuia is null ? -1 : guias.FindIndex(g => g.Id == selectedGuia.Id);
+    var prev = idx > 0 ? guias[idx - 1] : null;
+    var next = idx >= 0 && idx < guias.Count - 1 ? guias[idx + 1] : null;
+}
+
+<div class="bib-page">
+    <nav class="bib-breadcrumb" aria-label="breadcrumb">
+        <a asp-action="Index">Biblioteca</a>
+        <span class="bib-breadcrumb-sep">/</span>
+        <span class="bib-breadcrumb-current">Guías y Tutoriales</span>
+    </nav>
+
+    <div class="bib-hero bib-hero-compact">
+        <div class="bib-hero-content">
+            <span class="bib-badge-pill">Centro de aprendizaje</span>
+            <h1>Guías y Tutoriales Interactivos</h1>
+            <p>Elige un tema a la izquierda. Avanza con Anterior / Siguiente o usa los capítulos del video.</p>
+        </div>
+    </div>
+
+    <div class="bib-toolbar">
+        <div class="bib-filter-pills" role="navigation" aria-label="Filtrar por nivel">
+            <a asp-action="Guias" asp-route-nivel="Todos" class="bib-pill @(string.IsNullOrEmpty(Model.FiltroNivel) || Model.FiltroNivel == "Todos" ? "active" : "")">Todos</a>
+            <a asp-action="Guias" asp-route-nivel="Principiante" class="bib-pill @(Model.FiltroNivel == "Principiante" ? "active" : "")">Principiante</a>
+            <a asp-action="Guias" asp-route-nivel="Intermedio" class="bib-pill @(Model.FiltroNivel == "Intermedio" ? "active yellow" : "")">Intermedio</a>
+            <a asp-action="Guias" asp-route-nivel="Avanzado" class="bib-pill @(Model.FiltroNivel == "Avanzado" ? "active" : "")">Avanzado</a>
+        </div>
+    </div>
+
+    <div class="bib-guias-layout">
+        <aside class="bib-guias-sidebar" aria-label="Lista de guías">
+            <p class="bib-guias-sidebar-label">Módulos (@guias.Count)</p>
+            @foreach (var g in guias)
+            {
+                <a asp-action="Guias" asp-route-id="@g.Id" asp-route-nivel="@Model.FiltroNivel"
+                   class="bib-guia-sidebar-item @(g.Id == selectedGuia?.Id ? "active" : "")">
+                    <div class="bib-guia-sidebar-meta">
+                        <span class="bib-chip complexity">@g.NivelDificultad</span>
+                        <span class="bib-guia-time">@g.TiempoEstimado</span>
+                    </div>
+                    <div class="bib-guia-sidebar-title">@g.Titulo</div>
+                </a>
+            }
+        </aside>
+
+        @if (selectedGuia != null)
+        {
+            <article class="bib-guia-main-viewer">
+                <div class="bib-guia-nav">
+                    @if (prev != null)
+                    {
+                        <a class="bib-guia-nav-btn" asp-action="Guias" asp-route-id="@prev.Id" asp-route-nivel="@Model.FiltroNivel">← Anterior</a>
+                    }
+                    else
+                    {
+                        <span class="bib-guia-nav-btn is-disabled">← Anterior</span>
+                    }
+                    <span class="bib-guia-nav-pos">@(idx + 1) / @guias.Count</span>
+                    @if (next != null)
+                    {
+                        <a class="bib-guia-nav-btn" asp-action="Guias" asp-route-id="@next.Id" asp-route-nivel="@Model.FiltroNivel">Siguiente →</a>
+                    }
+                    else
+                    {
+                        <span class="bib-guia-nav-btn is-disabled">Siguiente →</span>
+                    }
+                </div>
+
+                <div class="bib-tags-row">
+                    <span class="bib-chip complexity">@selectedGuia.NivelDificultad</span>
+                    <span class="bib-chip micro">@selectedGuia.Categoria</span>
+                    <span class="bib-chip">@selectedGuia.TiempoEstimado</span>
+                </div>
+
+                <h2 class="bib-guia-title">@selectedGuia.Titulo</h2>
+                <p class="bib-guia-subtitle">@selectedGuia.Subtitulo</p>
+
+                @if (selectedGuia.TieneVideoTutorial)
+                {
+                    <div class="bib-video-container">
+                        <div class="bib-video-placeholder" role="img" aria-label="Vista previa del tutorial">
+                            <div class="bib-video-play-btn" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                            <span>Tutorial en video</span>
+                        </div>
+                        @if (selectedGuia.VideoCapitulos.Any())
+                        {
+                            <div class="bib-chapters-list">
+                                @foreach (var cap in selectedGuia.VideoCapitulos)
+                                {
+                                    <span class="bib-chapter-pill">
+                                        <strong>@cap.Tiempo</strong>
+                                        <span>@cap.Titulo</span>
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (selectedGuia.TieneSimuladorPID)
+                {
+                    <div class="bib-sim-container">
+                        <div class="bib-sim-header">
+                            <div>
+                                <h4>Simulador de respuesta temporal</h4>
+                                <div class="bib-sim-hint">Ajusta las ganancias y observa la respuesta al escalón.</div>
+                            </div>
+                            <button type="button" class="bib-pill active" onclick="resetearPID()">Valores por defecto</button>
+                        </div>
+
+                        <div class="bib-sim-chart-area" id="pidChartArea">
+                            <svg id="pidSvg" width="100%" height="100%" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet">
+                                <line x1="40" y1="20" x2="40" y2="170" stroke="rgba(100, 116, 139, 0.2)" stroke-width="1" />
+                                <line x1="40" y1="170" x2="680" y2="170" stroke="rgba(100, 116, 139, 0.2)" stroke-width="1" />
+                                <line x1="40" y1="60" x2="680" y2="60" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,4" />
+                                <text x="45" y="55" fill="#f59e0b" font-size="11" font-weight="bold">Setpoint (SP) = 100</text>
+                                <path id="pidResponsePath" d="M 40 170 Q 200 30 680 60" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </div>
+
+                        <div class="bib-ds-specs-grid">
+                            <div>
+                                <div class="bib-spec-label">Tiempo de subida (tr)</div>
+                                <div class="bib-spec-val" id="pidTr">0.32 s</div>
+                            </div>
+                            <div>
+                                <div class="bib-spec-label">Sobreimpulso (Mp)</div>
+                                <div class="bib-spec-val" id="pidMp">12.4 %</div>
+                            </div>
+                            <div>
+                                <div class="bib-spec-label">Asentamiento (ts)</div>
+                                <div class="bib-spec-val" id="pidTs">1.15 s</div>
+                            </div>
+                            <div>
+                                <div class="bib-spec-label">Error estacionario</div>
+                                <div class="bib-spec-val" id="pidEss">0.00 %</div>
+                            </div>
+                        </div>
+
+                        <div class="bib-sim-controls">
+                            <div class="bib-slider-wrap">
+                                <div class="bib-slider-label">
+                                    <span>Kp</span>
+                                    <span id="valKp">2.40</span>
+                                </div>
+                                <input type="range" id="sliderKp" min="0.1" max="10.0" step="0.1" value="2.4" class="bib-range-slider" oninput="actualizarSimulacionPID()" />
+                            </div>
+                            <div class="bib-slider-wrap">
+                                <div class="bib-slider-label">
+                                    <span>Ki</span>
+                                    <span id="valKi">0.85</span>
+                                </div>
+                                <input type="range" id="sliderKi" min="0.0" max="5.0" step="0.05" value="0.85" class="bib-range-slider" oninput="actualizarSimulacionPID()" />
+                            </div>
+                            <div class="bib-slider-wrap">
+                                <div class="bib-slider-label">
+                                    <span>Kd</span>
+                                    <span id="valKd">0.18</span>
+                                </div>
+                                <input type="range" id="sliderKd" min="0.0" max="2.0" step="0.02" value="0.18" class="bib-range-slider" oninput="actualizarSimulacionPID()" />
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <h3 class="bib-guia-section">Fundamentos y procedimiento</h3>
+                <div class="bib-stepper-wrap">
+                    @foreach (var paso in selectedGuia.Pasos)
+                    {
+                        <div class="bib-step-box">
+                            <div class="bib-step-num">@paso.Numero</div>
+                            <div class="bib-step-content">
+                                <h4>@paso.Titulo</h4>
+                                <p>@paso.Contenido</p>
+                                @if (!string.IsNullOrEmpty(paso.Formula))
+                                {
+                                    <div class="bib-pinout-callout bib-formula">@paso.Formula</div>
+                                }
+                                @if (!string.IsNullOrEmpty(paso.Tip))
+                                {
+                                    <div class="bib-guia-tip">Nota: @paso.Tip</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (selectedGuia.TienePlaygroundCodigo && !string.IsNullOrEmpty(selectedGuia.CodigoEjemplo))
+                {
+                    <h3 class="bib-guia-section">Entorno de prueba de firmware</h3>
+                    <div class="bib-playground-wrap">
+                        <div class="bib-code-head">
+                            <span class="bib-code-lang">C++ / Microcontrolador</span>
+                            <button type="button" class="bib-btn-copy" onclick="ejecutarCodigoPlayground()">Ejecutar</button>
+                        </div>
+                        <pre class="bib-code-pre"><code id="codePlaygroundEditor">@selectedGuia.CodigoEjemplo</code></pre>
+                        <div class="bib-console-screen" id="virtualSerialConsole">
+                            Consola lista a 115200 baud. Pulsa Ejecutar para ver la telemetría.
+                        </div>
+                    </div>
+                }
+
+                @if (selectedGuia.PreguntasQuiz.Any())
+                {
+                    <h3 class="bib-guia-section">Autoevaluación</h3>
+                    @foreach (var q in selectedGuia.PreguntasQuiz)
+                    {
+                        <div class="bib-quiz-card" id="quiz-@q.Id">
+                            <div class="bib-quiz-q">@q.Enunciado</div>
+                            <div class="bib-quiz-options">
+                                @foreach (var op in q.Opciones)
+                                {
+                                    <button type="button" class="bib-quiz-option-btn"
+                                            onclick="responderQuiz('@q.Id', '@op.Letra', @(op.EsCorrecta ? "true" : "false"), '@q.Explicacion', this)">
+                                        <strong>@op.Letra)</strong> @op.Texto
+                                    </button>
+                                }
+                            </div>
+                            <div id="quiz-feedback-@q.Id" class="bib-callout-advice" style="display: none; margin-top: 10px; font-size: 0.8rem;"></div>
+                        </div>
+                    }
+                }
+            </article>
+        }
+        else
+        {
+            <div class="bib-guia-main-viewer">
+                <p class="bib-guia-subtitle">No hay guías para este filtro. Elige otro nivel.</p>
+            </div>
+        }
+    </div>
+</div>

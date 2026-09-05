@@ -1,0 +1,19 @@
+{
+  "name": "sugoi-simulacion-2d-api",
+  "version": "1.0.0",
+  "description": "API del simulador de circuitos 2D (sugoi_project): CRUD de diseños en MySQL + proxy de Gemini.",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

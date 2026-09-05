@@ -1,0 +1,127 @@
+@model ValidarBomViewModel
+@{
+    ViewData["Title"] = "Lista de materiales";
+    ViewData["Wide"] = true;
+}
+
+<section class="app-card app-card-form bom-card">
+    <h1>Lista de materiales</h1>
+    <p class="app-lead">Revisa el BOM de <strong>@Model.NombreProyecto</strong>. Cambia cantidades o quita lo que no necesites.</p>
+
+    <form asp-action="ConfirmarBom" method="post" class="auth-form bom-form" id="bomForm" data-loading-button="#bomSubmit">
+        <div asp-validation-summary="ModelOnly" class="auth-errors"></div>
+        <input type="hidden" asp-for="ProyectoID" />
+        <input type="hidden" asp-for="NombreProyecto" />
+
+        <div class="bom-scroll">
+            <h2 class="app-section-title">En inventario</h2>
+            @if (Model.Inventario.Count == 0)
+            {
+                <p class="app-empty">No indicaste materiales propios. Todo lo necesario aparecerá como faltante o requisito.</p>
+            }
+            else
+            {
+                <div class="bom-list">
+                    @for (var i = 0; i < Model.Inventario.Count; i++)
+                    {
+                        <div class="bom-row bom-row-ok" data-bom-row title="@Model.Inventario[i].Nombre">
+                            <input type="hidden" asp-for="Inventario[i].Nombre" />
+                            <input type="hidden" asp-for="Inventario[i].Motivo" />
+                            <input type="hidden" asp-for="Inventario[i].Quitar" data-quitar />
+                            <div class="bom-row-main">
+                                <span class="bom-badge bom-badge-ok">Stock</span>
+                                <strong>@Model.Inventario[i].Nombre</strong>
+                            </div>
+                            <label class="bom-qty">
+                                Cant.
+                                <input asp-for="Inventario[i].Cantidad" type="number" min="1" max="999" />
+                            </label>
+                            <button type="button" class="bom-remove" data-remove-row>Quitar</button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <h2 class="app-section-title">Requisitos</h2>
+            @if (Model.Requisitos.Count == 0)
+            {
+                <p class="app-empty">No agregaste piezas obligatorias que aún no tienes.</p>
+            }
+            else
+            {
+                <div class="bom-list">
+                    @for (var i = 0; i < Model.Requisitos.Count; i++)
+                    {
+                        <div class="bom-row bom-row-req" data-bom-row title="@Model.Requisitos[i].Motivo">
+                            <input type="hidden" asp-for="Requisitos[i].Nombre" />
+                            <input type="hidden" asp-for="Requisitos[i].Quitar" data-quitar />
+                            <div class="bom-row-main">
+                                <span class="bom-badge bom-badge-req">Requisito</span>
+                                <strong>@Model.Requisitos[i].Nombre</strong>
+                            </div>
+                            <input type="hidden" asp-for="Requisitos[i].Motivo" />
+                            <label class="bom-qty">
+                                Cant.
+                                <input asp-for="Requisitos[i].Cantidad" type="number" min="1" max="999" />
+                            </label>
+                            <button type="button" class="bom-remove" data-remove-row>Quitar</button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <h2 class="app-section-title">Faltantes / nuevos</h2>
+            @if (Model.Faltantes.Count == 0)
+            {
+                <p class="app-empty">La IA no sugirió piezas extra. Revisa el inventario o confirma para continuar.</p>
+            }
+            else
+            {
+                <div class="bom-list">
+                    @for (var i = 0; i < Model.Faltantes.Count; i++)
+                    {
+                        <div class="bom-row bom-row-new" data-bom-row title="@Model.Faltantes[i].Motivo">
+                            <input type="hidden" asp-for="Faltantes[i].Nombre" />
+                            <input type="hidden" asp-for="Faltantes[i].Quitar" data-quitar />
+                            <div class="bom-row-main">
+                                <span class="bom-badge bom-badge-new">Faltante</span>
+                                <strong>@Model.Faltantes[i].Nombre</strong>
+                            </div>
+                            <input type="hidden" asp-for="Faltantes[i].Motivo" />
+                            <label class="bom-qty">
+                                Cant.
+                                <input asp-for="Faltantes[i].Cantidad" type="number" min="1" max="999" />
+                            </label>
+                            <button type="button" class="bom-remove" data-remove-row>Quitar</button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="auth-submit" id="bomSubmit" data-loading-text="Generando código y canvas…">Confirmar lista</button>
+    </form>
+
+    <p class="auth-footer">
+        <a asp-controller="Proyectos" asp-action="Crear">Volver al formulario</a>
+    </p>
+</section>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("[data-remove-row]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const row = button.closest("[data-bom-row]");
+                if (!row) return;
+                const flag = row.querySelector("[data-quitar]");
+                if (flag) flag.value = "true";
+                row.querySelectorAll("input[type='number']").forEach((input) => {
+                    input.disabled = true;
+                    input.removeAttribute("required");
+                });
+                row.hidden = true;
+                row.classList.add("is-removed");
+            });
+        });
+    </script>
+}

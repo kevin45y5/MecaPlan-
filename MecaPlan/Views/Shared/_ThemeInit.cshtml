@@ -1,0 +1,12 @@
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("mecaplan-theme");
+    document.documentElement.setAttribute(
+      "data-theme",
+      saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+    );
+    document.documentElement.style.colorScheme = document.documentElement.getAttribute("data-theme");
+  } catch (e) {}
+})();
+</script>

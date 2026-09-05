@@ -1,0 +1,22 @@
+@startuml
+!theme plain
+title BPMN — Registro y autenticación (Account)
+
+start
+:Estudiante accede a la app;
+if (¿Tiene cuenta?) then (No)
+  :Registra Nombre, Apellido, Email y contraseña;
+  :Valida datos y email único;
+  if (¿Datos válidos?) then (No)
+    :Muestra errores;
+    stop
+  else (Sí)
+    :Aplica hash + salt a la contraseña;
+    :Guarda Estudiante en BD;
+  endif
+else (Sí)
+endif
+:Inicia sesión (cookie MecaPlan.Auth, 8 h);
+:Redirige a Home / url solicitada;
+stop
+@enduml

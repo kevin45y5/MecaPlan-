@@ -1,0 +1,106 @@
+@startuml
+!theme plain
+skinparam linetype ortho
+hide circle
+title MecaPlan — Modelo de datos (SQL Server)
+
+entity "Estudiante" as EST {
+  * EstudianteID : int <<PK>>
+  --
+  Nombre : nvarchar(100)
+  Apellido : nvarchar(100)
+  Email : nvarchar(150) <<UK>>
+  PasswordHash : varbinary
+  PasswordSalt : varbinary
+  Activo : bit
+  FechaRegistro : datetime
+  FechaEliminacion : datetime?
+}
+
+entity "Proyecto" as PRO {
+  * ProyectoID : int <<PK>>
+  --
+  EstudianteID : int <<FK>>
+  NombreProyecto : nvarchar(150)
+  DescripcionIdea : nvarchar(max)
+  NivelComplejidad : nvarchar(50)
+  MaterialesPrevios : nvarchar(max)?
+  MaterialesRequeridos : nvarchar(max)?
+  Microcontrolador : nvarchar(80)?
+  InstruccionesGeneradas : nvarchar(max)?
+  CodigoGenerado : nvarchar(max)?
+  ConexionesCanvas : nvarchar(max)?
+  PosicionesCanvas : nvarchar(max)?
+  Estado : nvarchar(50)
+  Activo : bit
+  FechaCreacion : datetime
+  FechaEliminacion : datetime?
+}
+
+entity "Componente" as COM {
+  * ComponenteID : int <<PK>>
+  --
+  Nombre : nvarchar(100)
+  Categoria : nvarchar(50)
+  StockDisponible : int
+  PrecioEstimado : decimal(10,2)
+  UrlImagen : nvarchar(255)?
+  Activo : bit
+  FechaCreacion : datetime
+  FechaEliminacion : datetime?
+}
+
+entity "ProyectoComponente" as PCO {
+  * ProyectoComponenteID : int <<PK>>
+  --
+  ProyectoID : int <<FK>>
+  ComponenteID : int <<FK>>
+  CantidadRequerida : int
+  EnInventario : bit
+  Motivo : nvarchar(300)?
+}
+
+entity "PasoEnsamblaje" as PAS {
+  * PasoID : int <<PK>>
+  --
+  ProyectoID : int <<FK>>
+  NumeroPaso : int
+  Titulo : nvarchar(150)
+  Descripcion : nvarchar(max)
+  UrlEsquema : nvarchar(255)?
+  Completado : bit
+  FechaCreacion : datetime
+}
+
+entity "Diagnostico" as DIA {
+  * DiagnosticoID : int <<PK>>
+  --
+  ProyectoID : int <<FK>>
+  TipoError : nvarchar(100)
+  DescripcionFalla : nvarchar(max)
+  SolucionSugerida : nvarchar(max)?
+  FechaReporte : datetime
+  FechaResolucion : datetime?
+}
+
+entity "SimulacionDiseno" as SIM {
+  * SimulacionDisenoID : int <<PK>>
+  --
+  ProyectoID : int <<FK>>
+  Nombre : nvarchar(150)
+  Autor : nvarchar(100)?
+  PinoutJson : nvarchar(max)?
+  Codigo : nvarchar(max)?
+  ThumbnailBase64 : nvarchar(max)?
+  Activo : bit
+  FechaCreacion : datetime
+  FechaActualizacion : datetime?
+}
+
+EST ||--o{ PRO : "posee"
+PRO ||--o{ PCO : "requiere"
+COM ||--o{ PCO : "se usa en"
+PRO ||--o{ PAS : "tiene pasos"
+PRO ||--o{ DIA : "se diagnostica"
+PRO ||--o{ SIM : "se simula"
+@enduml

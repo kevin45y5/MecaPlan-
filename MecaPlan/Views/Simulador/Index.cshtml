@@ -1,0 +1,298 @@
+@model MecaPlan.Models.ViewModels.SimuladorIndexViewModel
+@using System.Text.Json
+@{
+    Layout = "_Layout";
+    var proyectoId = Model.Proyecto.ProyectoID;
+    var nombreProyecto = Model.Proyecto.NombreProyecto;
+    ViewData["Title"] = $"{nombreProyecto} · Simulador 2D";
+    ViewData["Workspace"] = true;
+
+    var inyectar = new
+    {
+        proyecto = new { Model.Proyecto.ProyectoID, Model.Proyecto.NombreProyecto, Model.Proyecto.Microcontrolador },
+        componentes = Model.Componentes,
+        conexiones = Model.Conexiones,
+        codigo = Model.Codigo
+    };
+    var datosJson = JsonSerializer.Serialize(inyectar, new JsonSerializerOptions { PropertyNamingPolicy = null });
+    var codigoJs = JsonSerializer.Serialize(Model.Codigo ?? string.Empty);
+}
+
+<link rel="stylesheet" href="@Url.Content("~/simulador/css/style.css")?v=2d18" />
+<link rel="stylesheet" href="@Url.Content("~/simulador/css/integracion.css")?v=2d18" />
+<style>
+  .sim2d-wrap { height: calc(100dvh - 65px) !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }
+  #app { flex: 1 1 auto !important; height: auto !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
+  #main {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) 340px !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+  }
+  #workspace {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background-color: #0b1220 !important;
+    background-image:
+      linear-gradient(#243656 1px, transparent 1px),
+      linear-gradient(90deg, #243656 1px, transparent 1px),
+      linear-gradient(#162033 1px, transparent 1px),
+      linear-gradient(90deg, #162033 1px, transparent 1px) !important;
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px !important;
+  }
+  #konva-container, #wokwi-overlay { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; }
+  #konva-container canvas { background: transparent !important; }
+</style>
+
+<div class="sim2d-wrap">
+  <!-- ===================== BARRA INTEGRADA ===================== -->
+  <header class="sim2d-topbar">
+    <div class="sim2d-switch" role="group" aria-label="Modo de vista">
+      <a class="sim2d-opt" asp-controller="Proyectos" asp-action="Workspace" asp-route-id="@proyectoId">Diagrama</a>
+      <a class="sim2d-opt is-active" asp-controller="Simulador" asp-action="Index" asp-route-id="@proyectoId">2D</a>
+    </div>
+
+    <div class="sim2d-tools">
+      <input id="design-name" type="text" value="@nombreProyecto" title="Nombre del diseño" />
+      <button class="btn success" id="btn-run" title="Activar flujo de señal (visual)">Ejecutar</button>
+      <button class="btn" id="btn-stop" title="Detener">Detener</button>
+      <button class="btn primary" id="btn-save" title="Guardar diseño">Guardar</button>
+      <button class="btn" id="btn-load" title="Cargar diseño">Cargar</button>
+      <button class="btn" id="btn-clear" title="Limpiar lienzo">Limpiar</button>
+      <button class="btn danger" id="btn-delete" title="Quitar el componente o cable seleccionado (Supr)">Quitar</button>
+      <button class="btn" id="btn-disconnect" title="Quitar los cables del componente seleccionado">Desconectar</button>
+      <button class="btn" id="btn-debug" title="Preguntar al asistente">Asistente</button>
+      <button class="btn" id="btn-ai-layout" title="La IA valida y ordena las conexiones del lienzo">Organizar IA</button>
+      <button class="btn" id="btn-export" title="Exportar reporte (PNG/PDF)">Exportar</button>
+    </div>
+
+    <div class="sim2d-spacer"></div>
+    <a class="sim2d-link" asp-controller="Proyectos" asp-action="Guia" asp-route-id="@proyectoId">Guía de ensamblaje</a>
+  </header>
+
+  <!-- ===================== LAYOUT PRINCIPAL ===================== -->
+  <div id="app">
+    <div id="main">
+      <!-- ---------- PALETA ---------- -->
+      <aside id="sidebar">
+        <h3>Componentes</h3>
+
+        <h4 class="palette-cat">Microcontroladores</h4>
+        <div class="palette-item" data-type="arduino_uno" data-draggable="true" title="Arduino Uno">Arduino Uno</div>
+        <div class="palette-item" data-type="arduino_nano" data-draggable="true" title="Arduino Nano">Arduino Nano</div>
+        <div class="palette-item" data-type="arduino_mega" data-draggable="true" title="Arduino Mega">Arduino Mega</div>
+        <div class="palette-item" data-type="esp32_devkit" data-draggable="true" title="ESP32 DevKit">ESP32 DevKit</div>
+        <div class="palette-item" data-type="attiny85" data-draggable="true" title="ATtiny85">ATtiny85</div>
+        <div class="palette-item" data-type="rp2040" data-draggable="true" title="Pico RP2040">Pico RP2040</div>
+        <div class="palette-item" data-type="protoboard" data-draggable="true" title="Protoboard">Protoboard</div>
+
+        <h4 class="palette-cat">Fuentes</h4>
+        <div class="palette-item" data-type="vcc" data-draggable="true" title="Fuente 5V">Fuente 5V</div>
+        <div class="palette-item" data-type="gnd" data-draggable="true" title="Tierra">Tierra GND</div>
+
+        <h4 class="palette-cat">Pasivos</h4>
+        <div class="palette-item" data-type="resistor" data-draggable="true" title="Resistencia">Resistencia</div>
+        <div class="palette-item" data-type="potentiometer" data-draggable="true" title="Potenciómetro">Potenciómetro</div>
+        <div class="palette-item" data-type="slide_pot" data-draggable="true" title="Pot. deslizante">Pot. desliz.</div>
+        <div class="palette-item" data-type="photoresistor" data-draggable="true" title="Fotorresistencia LDR">Fotorresistencia</div>
+        <div class="palette-item" data-type="ntc_temp" data-draggable="true" title="Sensor NTC">Sensor NTC</div>
+        <div class="palette-item" data-type="tilt_switch" data-draggable="true" title="Inclinación">Inclinación</div>
+
+        <h4 class="palette-cat">LEDs</h4>
+        <div class="palette-item" data-type="led_red" data-draggable="true" title="LED Rojo">LED Rojo</div>
+        <div class="palette-item" data-type="led_green" data-draggable="true" title="LED Verde">LED Verde</div>
+        <div class="palette-item" data-type="led_blue" data-draggable="true" title="LED Azul">LED Azul</div>
+        <div class="palette-item" data-type="led_rgb" data-draggable="true" title="LED RGB">LED RGB</div>
+        <div class="palette-item" data-type="led_bar" data-draggable="true" title="Barra LED">Barra LED</div>
+        <div class="palette-item" data-type="led_ring" data-draggable="true" title="Anillo LED">Anillo LED</div>
+        <div class="palette-item" data-type="neopixel" data-draggable="true" title="NeoPixel">NeoPixel</div>
+        <div class="palette-item" data-type="neopixel_matrix" data-draggable="true" title="Matriz NeoPixel">Matriz NP</div>
+
+        <h4 class="palette-cat">Botones</h4>
+        <div class="palette-item" data-type="button" data-draggable="true" title="Pulsador">Pulsador</div>
+        <div class="palette-item" data-type="button_6mm" data-draggable="true" title="Pulsador 6mm">Pulsador 6mm</div>
+        <div class="palette-item" data-type="slide_switch" data-draggable="true" title="Interruptor">Interruptor</div>
+        <div class="palette-item" data-type="dip_switch" data-draggable="true" title="DIP Switch">DIP Switch</div>
+        <div class="palette-item" data-type="membrane_keypad" data-draggable="true" title="Teclado 4x4">Teclado 4x4</div>
+        <div class="palette-item" data-type="rotary" data-draggable="true" title="Dial giratorio">Dial giratorio</div>
+
+        <h4 class="palette-cat">Actuadores</h4>
+        <div class="palette-item" data-type="buzzer" data-draggable="true" title="Buzzer">Buzzer</div>
+        <div class="palette-item" data-type="servo" data-draggable="true" title="Servo">Servo</div>
+        <div class="palette-item" data-type="stepper" data-draggable="true" title="Motor paso">Motor paso</div>
+        <div class="palette-item" data-type="relay" data-draggable="true" title="Relé">Relé</div>
+
+        <h4 class="palette-cat">Sensores</h4>
+        <div class="palette-item" data-type="dht22" data-draggable="true" title="DHT22">DHT22</div>
+        <div class="palette-item" data-type="hc_sr04" data-draggable="true" title="Ultrasónico">Ultrasónico</div>
+        <div class="palette-item" data-type="pir" data-draggable="true" title="PIR">Sensor PIR</div>
+        <div class="palette-item" data-type="flame" data-draggable="true" title="Llama">Llama</div>
+        <div class="palette-item" data-type="gas" data-draggable="true" title="Gas MQ">Gas MQ</div>
+        <div class="palette-item" data-type="sound" data-draggable="true" title="Sonido">Micrófono</div>
+        <div class="palette-item" data-type="mpu6050" data-draggable="true" title="IMU 6050">IMU 6050</div>
+        <div class="palette-item" data-type="hx711" data-draggable="true" title="HX711">HX711</div>
+        <div class="palette-item" data-type="joystick" data-draggable="true" title="Joystick">Joystick</div>
+        <div class="palette-item" data-type="ir_receiver" data-draggable="true" title="Receptor IR">Receptor IR</div>
+
+        <h4 class="palette-cat">Displays</h4>
+        <div class="palette-item" data-type="seg7" data-draggable="true" title="7 segmentos">7-seg</div>
+        <div class="palette-item" data-type="lcd1602" data-draggable="true" title="LCD 16x2">LCD 16x2</div>
+        <div class="palette-item" data-type="lcd2004" data-draggable="true" title="LCD 20x4">LCD 20x4</div>
+        <div class="palette-item" data-type="oled" data-draggable="true" title="OLED">OLED</div>
+        <div class="palette-item" data-type="tft" data-draggable="true" title="TFT 2.8">TFT 2.8"</div>
+        <div class="palette-item" data-type="microsd" data-draggable="true" title="MicroSD">MicroSD</div>
+        <div class="palette-item" data-type="rtc" data-draggable="true" title="RTC">RTC</div>
+      </aside>
+
+      <!-- ---------- LIENZO ---------- -->
+      <div id="workspace">
+        <div id="konva-container"></div>
+        <div id="wokwi-overlay"></div>
+        <div id="sim2d-hint">Arrastra la <b>barra gris</b> para mover. Clic en el <b>pin naranja</b> para cablear. <b>×</b> quita. <b>Supr</b> borra lo seleccionado.</div>
+      </div>
+      <div id="sim2d-ctx-menu"></div>
+
+      <!-- ---------- INSPECTOR ---------- -->
+      <aside id="inspector">
+        <h3>Inspector</h3>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="code">Código</button>
+          <button class="tab-btn" data-tab="pinout">Pinout</button>
+          <button class="tab-btn" data-tab="bom">BOM</button>
+          <button class="tab-btn" data-tab="assistant">Asistente</button>
+        </div>
+        <div class="tab-panels">
+          <div class="tab-panel active" id="panel-code">
+            <h4>Arduino C++</h4>
+            <textarea id="code-editor" spellcheck="false"></textarea>
+          </div>
+          <div class="tab-panel" id="panel-pinout">
+            <h4>Mapeo de pines (JSON en vivo)</h4>
+            <pre class="json" id="pinout-json">{}</pre>
+          </div>
+          <div class="tab-panel" id="panel-bom">
+            <h4>Estimación de costo (BOM)</h4>
+            <table class="bom">
+              <thead>
+                <tr><th>Componente</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr>
+              </thead>
+              <tbody id="bom-body">
+                <tr><td colspan="4">Agrega componentes para calcular.</td></tr>
+              </tbody>
+            </table>
+            <div class="bom-totals">
+              <div class="row"><span>Subtotal</span><span id="bom-subtotal">0.00</span></div>
+              <div class="row grand"><span>Total (<span id="bom-currency">USD</span>)</span><span id="bom-total">0.00</span></div>
+            </div>
+          </div>
+          <div class="tab-panel" id="panel-assistant">
+            <h4>Asistente de depuración</h4>
+            <p style="font-size:12px;color:var(--auth-muted);margin-bottom:8px;">
+              Pregunta sobre <strong>@nombreProyecto</strong>: reviso componentes, conexiones y código para descartar causas imposibles.
+            </p>
+            <div data-mecachat data-mecachat-proyecto="@proyectoId" class="mecachat-root">
+              <select class="mecachat-proyecto"></select>
+              <div class="dia-chat mecachat-chat" aria-live="polite"></div>
+              <form class="dia-input mecachat-form">
+                <textarea class="mecachat-mensaje" rows="1" placeholder="¿Qué le falla al circuito?" required></textarea>
+                <button type="submit" class="dia-send mecachat-send" aria-label="Enviar">➤</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="status-bar">Generando circuito desde tu proyecto...</div>
+  </div>
+</div>
+
+<!-- Modal de carga -->
+<div id="load-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Diseños guardados</h3>
+      <button class="close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <ul id="design-list"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DATOS DEL PROYECTO (inyectados por el backend) ============ -->
+<script>
+  window.SUGOI_PROYECTO = @Html.Raw(datosJson);
+</script>
+
+<!-- Config -->
+<script src="@Url.Content("~/simulador/config.js")?v=2d18"></script>
+
+<!-- Konva.js (local) -->
+<script src="@Url.Content("~/lib/konva/konva.min.js")"></script>
+
+<!-- wokwi-elements (local) -->
+<script src="@Url.Content("~/lib/wokwi/wokwi-elements.bundle.js")"></script>
+
+<!-- Módulos IIFE -->
+<script src="@Url.Content("~/simulador/js/canvasEngine.js")?v=2d30"></script>
+<script src="@Url.Content("~/simulador/js/services.js")?v=2d30"></script>
+<script src="@Url.Content("~/simulador/js/ui.js")?v=2d30"></script>
+<script src="@Url.Content("~/simulador/js/programaSimulador.js")?v=2d18"></script>
+
+<!-- Bootstrap (ES module) -->
+<script type="module" src="@Url.Content("~/simulador/js/main.js")"></script>
+
+<script>
+  var codigoInicial = @Html.Raw(codigoJs);
+  var ejemplo = 'void setup() {\n  pinMode(13, OUTPUT);\n}\nvoid loop() {\n  digitalWrite(13, HIGH);\n  delay(1000);\n  digitalWrite(13, LOW);\n  delay(1000);\n}';
+
+  function cargarCodigo() {
+    var el = document.getElementById('code-editor');
+    if (!el) return;
+    if (codigoInicial && codigoInicial.trim()) {
+      el.value = codigoInicial;
+    } else if (!el.value) {
+      el.value = ejemplo;
+    }
+  }
+
+  function llenarLienzo() {
+    var eng = window.SUGOI && window.SUGOI.engine;
+    var st = eng && eng.stage;
+    var ws = document.getElementById('workspace');
+    if (!st || !ws) return;
+    var w = ws.clientWidth || (window.innerWidth - 520);
+    var h = ws.clientHeight || (window.innerHeight - 160);
+    if (w > 40 && h > 40) {
+      st.width(w);
+      st.height(h);
+    }
+    if (eng.resize) eng.resize();
+  }
+
+  function esperarYGenerar() {
+    if (window.SUGOI && window.SUGOI.engine && window.SUGOI.engine.stage) {
+      cargarCodigo();
+      try {
+        window.SUGOI.adaptador.autoGenerar();
+        llenarLienzo();
+        requestAnimationFrame(llenarLienzo);
+        setTimeout(llenarLienzo, 200);
+        setTimeout(llenarLienzo, 700);
+        var params = new URLSearchParams(window.location.search);
+        var idDiseno = params.get('diseno');
+        if (idDiseno && window.SUGOI.ui) {
+          window.SUGOI.ui.loadById(Number(idDiseno));
+        }
+      } catch (e) { console.error('autoGenerar', e); }
+      return;
+    }
+    setTimeout(esperarYGenerar, 120);
+  }
+  esperarYGenerar();
+  window.addEventListener('resize', function () { llenarLienzo(); });
+</script>

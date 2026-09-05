@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-label="Actuador">
+  <rect x="70" y="20" width="60" height="50" rx="8" fill="#1f2937" stroke="#ef4444" stroke-width="3"/>
+  <circle cx="100" cy="80" r="22" fill="none" stroke="#ef4444" stroke-width="4"/>
+  <g fill="#eab308">
+    <circle cx="100" cy="80" r="4"/>
+  </g>
+  <rect x="96" y="60" width="8" height="18" fill="#94a3b8"/>
+  <g fill="#94a3b8">
+    <rect x="82" y="70" width="10" height="20" rx="2"/>
+    <rect x="112" y="70" width="10" height="20" rx="2"/>
+    <rect x="100" y="102" width="8" height="18" rx="2"/>
+  </g>
+</svg>

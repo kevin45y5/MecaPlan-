@@ -1,0 +1,56 @@
+@model Proyecto
+@{
+    ViewData["Title"] = Model.NombreProyecto;
+    ViewData["Wide"] = true;
+}
+
+<section class="app-card app-card-form app-detalle">
+    <p class="app-kicker">@Model.NivelComplejidad · @Model.Estado</p>
+    <h1>@Model.NombreProyecto</h1>
+    <p class="app-lead">@Model.DescripcionIdea</p>
+
+    <h2 class="app-section-title">Componentes</h2>
+    <ul class="app-list">
+        @foreach (var item in Model.ProyectoComponentes)
+        {
+            <li class="@(item.EnInventario ? "bom-row-ok" : "bom-row-new")">
+                <strong>@item.Componente.Nombre</strong>
+                <span>
+                    @(item.EnInventario ? "En inventario" : "Faltante")
+                    · x@(item.CantidadRequerida)
+                    @if (!string.IsNullOrWhiteSpace(item.Motivo))
+                    {
+                        <text> · @item.Motivo</text>
+                    }
+                </span>
+            </li>
+        }
+    </ul>
+
+    @if (!string.IsNullOrWhiteSpace(Model.InstruccionesGeneradas))
+    {
+        <h2 class="app-section-title">Resumen</h2>
+        <p class="app-body-text">@Model.InstruccionesGeneradas</p>
+    }
+
+    <h2 class="app-section-title">Pasos de ensamblaje</h2>
+    <ol class="app-steps">
+        @foreach (var paso in Model.PasosEnsamblaje.OrderBy(p => p.NumeroPaso))
+        {
+            <li>
+                <h3>@paso.Titulo</h3>
+                <p>@paso.Descripcion</p>
+            </li>
+        }
+    </ol>
+
+    @if (!string.IsNullOrWhiteSpace(Model.CodigoGenerado))
+    {
+        <h2 class="app-section-title">Código C++</h2>
+        <pre class="app-code"><code>@Model.CodigoGenerado</code></pre>
+    }
+
+    <p class="auth-footer">
+        <a asp-controller="Home" asp-action="Index">Volver al inicio</a>
+    </p>
+</section>
